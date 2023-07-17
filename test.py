@@ -41,6 +41,8 @@ try:
 except Exception as e:
     # Connection failed
     print("Failed to connect to the MongoDB database:", str(e))
+    sys.exit()
+
     
 app = Flask(__name__)
 
