@@ -20,7 +20,6 @@ tqdm==4.65.0
 urllib3==2.0.3
 Werkzeug==2.3.6
 blinker==1.6.2
-charset-normalizer==3.2.0
 click==8.1.5
 colorama==0.4.6
 configparser==6.0.0
