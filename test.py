@@ -4,6 +4,7 @@ import os
 import ssl
 from flask import Flask, jsonify, render_template, request, redirect, session, url_for
 from pymongo import MongoClient, errors
+from pymongo.errors import ConnectionFailure
 from nltk.metrics import edit_distance
 from nltk.metrics import distance
 from difflib import SequenceMatcher
@@ -26,22 +27,25 @@ print(connectionstring)
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
-#socket_timeout = 9000
+try:
+    # Establish a connection to MongoDB with a timeout of 90 seconds
+    client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=90000)
 
-# Create the MongoClient instance
-client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=90000)
+    # Check if the connection is successful
+    client.admin.command('ping')
 
-# Check if the connection is successful
-client.admin.command('ping')
+    # Connection successful
+    print("Connected to the MongoDB database.")
 
-# Connection successful
-print("Connected to the MongoDB database.")
+    db = client['KreolDB']
+    collection = db['dictionary']
+    result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
+    word_array = [obj['word'] for obj in result]
+    words = word_array
 
-db = client['KreolDB']
-collection = db['dictionary']
-result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
-word_array = [obj['word'] for obj in result]
-words = word_array
+except ConnectionFailure as e:
+    # Connection failed
+    print("Failed to connect to the MongoDB database:", str(e))
 app = Flask(__name__)
 
 
