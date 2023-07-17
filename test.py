@@ -23,16 +23,24 @@ connectionstring = 'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongo
 words = []
 # Set the socket timeout value in milliseconds (e.g., 90 seconds)
 socket_timeout = 90000
+try:
+    # Create the MongoClient instance
+    client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE, serverSelectionTimeoutMS=socket_timeout)
+    #client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+     # Check if the connection is successful
+    client.server_info()  # This line will throw an exception if the connection is not established
 
-# Create the MongoClient instance
-client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE, serverSelectionTimeoutMS=socket_timeout)
-
-#client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
-db = client['KreolDB']
-collection = db['dictionary']
-result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
-word_array = [obj['word'] for obj in result]
-words = word_array
+    # Connection successful
+    print("Connected to the MongoDB database.")
+    db = client['KreolDB']
+    collection = db['dictionary']
+    result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
+    word_array = [obj['word'] for obj in result]
+    words = word_array
+except Exception as e:
+    # Connection failed
+    print("Failed to connect to the MongoDB database:", str(e))
+    
 app = Flask(__name__)
 
 @app.route("/")
