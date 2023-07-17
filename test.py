@@ -45,6 +45,7 @@ try:
 except Exception as e:
     # Connection failed
     print("Failed to connect to the MongoDB database:", str(e))
+    words=['lin', 'lim', 'ling', 'linn', 'linz', 'lingam', 'li', 'lien', 'lion', 'lwin', 'lindi', 'liner', 'linet', 'lingo', 'linto', 'alim', 'plim', 'plin', "li'nn", 'limem', 'limon', 'blind', 'blink', 'klinn', 'minim', 'plint']
 
 
 app = Flask(__name__)
