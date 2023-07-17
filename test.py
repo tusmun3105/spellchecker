@@ -37,6 +37,7 @@ try:
     result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
     word_array = [obj['word'] for obj in result]
     words = word_array
+    print(words)
 except Exception as e:
     # Connection failed
     print("Failed to connect to the MongoDB database:", str(e))
