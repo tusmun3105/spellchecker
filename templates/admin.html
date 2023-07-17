@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Admin Login</title>
+	<style>
+		body {
+			background-color: #252525;
+			color: #fff;
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+			line-height: 1.5;
+			margin: 0;
+			padding: 0;
+		}
+
+		.container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+		}
+
+		h1 {
+			font-size: 2rem;
+			margin-bottom: 2rem;
+		}
+
+		form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			width: 300px;
+			padding: 2rem;
+			background-color: #424242;
+			border-radius: 10px;
+		}
+
+		input[type="text"],
+		input[type="password"] {
+			width: 100%;
+			padding: 0.5rem;
+			margin-bottom: 1rem;
+			border: none;
+			border-radius: 5px;
+			background-color: #2d2d2d;
+			color: #fff;
+			font-size: 1rem;
+			line-height: 1.5;
+		}
+
+		input[type="submit"] {
+			width: 100%;
+			padding: 0.5rem;
+			margin-top: 1rem;
+			border: none;
+			border-radius: 5px;
+			background-color: #ff5f5f;
+			color: #fff;
+			font-size: 1rem;
+			line-height: 1.5;
+			cursor: pointer;
+		}
+
+		input[type="submit"]:hover {
+			background-color: #ff4141;
+		}
+
+		label {
+			margin-bottom: 0.5rem;
+			font-size: 1rem;
+		}
+
+		.error-message {
+			color: red;
+			font-size: 14px;
+			margin-top: 5px;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+				function validate() {
+  var username = $("#username").val();
+  var password = $("#password").val();
+  const spanuser = $("#username-error");
+  const spanpass = $("#pass-error");
+
+ 
+    hashPassword(password).then(hashedPassword => {
+     // console.log(hashedPassword);
+      var hp = hashedPassword;
+      spanpass.html('');
+	  $(document).ready(function () {
+
+      $.ajax({
+        url: "/processUser",
+        type: "POST",
+        data: { "uname": username, "upass": hp },
+		success: function(response) {
+                if (response.success) {
+					sessionStorage.setItem('password', password);
+                    window.location.href = response.redirect_url;
+                } else {
+					spanpass.html('Login failed: ' + response.message);
+                    
+                }
+            },
+            error: function() {
+				spanpass.html('An error occurred while logging in.');
+            }
+      });
+	});
+      return true;
+    });
+  
+
+  return false;
+}
+
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+	</script>
+</head>
+
+<body>
+	{% extends "navbar.html" %}
+	{% block content %}
+	<div class="container">
+		<h1>Admin Login</h1>
+		<form onsubmit="return validate()" autocomplete="off">
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username" required>
+			<div id="username-error" class="error-message"></div>
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required>
+			<div id="pass-error" class="error-message"></div>
+			<input type="submit" value="Login">
+		</form>
+	</div>
+	{% endblock %}
+
+
+</body>
+
+</html>

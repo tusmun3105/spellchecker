@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Kreol Morisien Spell Checker</title>
+  <style>
+    option:not(:first-child):hover {
+      color: white;
+    }
+  </style>
+  <script src="{{ url_for('static', filename='script/jquery191.js')}}" type="text/javascript"></script>
+  <script src="{{ url_for('static', filename='script/caretpos.js')}}" type="text/javascript"></script>
+  <script src="{{ url_for('static', filename='script/script.js')}}" type="text/javascript"></script>
+  <script src="{{ url_for('static', filename='script/jquery331.js')}}" type="text/javascript"></script>
+  <script>
+    var dictionaryarr;
+    var set1;
+    $(document).ready(function () {
+      dictionaryarr = new Array(); // initialize an empty array for the dictionary
+
+      // get the dictionary file and populate the dictionary array
+      // $.get('static/sorted_words.txt', function (data) {
+      //  dictionaryarr = data.split('\r\n'); // split the data into an array of words and store it in the dictionary array
+      //});
+      $.ajax({
+        url: '/get-words-from-mongo',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+          // Process the data
+          for (var i = 0; i < data.length; i++) {
+            dictionaryarr.push(data[i].word);
+          }
+
+          // Sort the array
+          dictionaryarr.sort();
+          set1 = new Set(dictionaryarr.map(word => word.toLowerCase()));
+          // Do something with the sorted array
+          //console.log(dictionaryarr);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log('Error:', textStatus, errorThrown);
+        }
+      });
+
+
+      $('#ddsuggest').remove(); // remove any existing suggestions
+      $("#spellcheckArea").keyup(function (event) { // listen for keyup event on the spellcheckArea element
+        $('#ddsuggest').remove(); // remove any existing suggestions
+        var caret = new VanillaCaret(document.getElementById('spellcheckArea')); // Initialize a VanillaCaret object with the spellcheckArea element
+        var caretpos = caret.getPos(); // get the current cursor position
+        var key = event.key;
+        var result = 0;
+        if (/^[!#%&"()*+,\-./:;<=>?@[\]^_`{|}~]$/.test(key)) {
+          caretpos=caretpos+1;
+        }
+        if (key === " ") {
+          //caretpos=caretpos-1;
+        }
+ 
+        console.log("The cursorpos is :" + caretpos);
+        var sentence = $("#spellcheckArea").text(); // get the text content of the spellcheckArea element
+        sentence = capAfterDot(sentence);
+        console.log(sentence + " ");
+        sentence = removeStartingPunctuations(sentence); // remove any starting punctuation from the sentence
+        var tokensarray = splitSentence(sentence); // split the sentence into an array of tokens
+        console.log('tokensarr----->' + tokensarray);
+        var allwords = extractPunctuation(tokensarray); // extract all the words from the tokens array
+        console.log('allwords----->' + allwords);
+        var arrayphrase = splitWords(allwords); // split the words into an array of phrases
+        arrayphrase = concatenateElementsWithHyphen(arrayphrase);
+        arrayphrase = capitalizeAfterPunctuation(arrayphrase);
+        arrayphrase = shiftLastBracket(arrayphrase);
+        console.log(arrayphrase);
+        //////////////////////////////////
+        for (let i = 0; i < arrayphrase.length - 1; i++) {
+          if (arrayphrase[i].endsWith('\"')) {
+            arrayphrase[i + 1] = arrayphrase[i].slice(-1) + arrayphrase[i + 1];
+            arrayphrase[i] = arrayphrase[i].slice(0, -1);
+          }
+        }
+        /////////////////////////////////
+
+        arrayphrase = removeAdjacentPunctuations(arrayphrase); // remove any adjacent punctuation from the array of phrases
+        var positions = findPositions(set1, arrayphrase); // find the positions of the phrases in the dictionary
+        var arraywithunderline = underlineElements(arrayphrase, positions); // underline the phrases that do not match the dictionary
+        var array = arraywithunderline;
+        for (let i = 0; i < array.length - 1; i++) {
+          if (array[i].includes("\"")) {
+            array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+            array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+            array[i] = "<i>" + array[i] + "</i>";
+            for (let j = i + 1; j < array.length; j++) {
+              i++;
+              if (!array[i].includes("\"")) {
+                array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+                array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+                array[i] = "<i>" + array[i] + "</i>";
+              }
+              else {
+                array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+                array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+                break;
+              }
+            }
+          }
+
+        }
+        /////////
+        for (let i = 0; i < array.length - 1; i++) {
+          if (array[i].includes("“")) {
+            array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+            array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+            array[i] = "<i>" + array[i] + "</i>";
+            for (let j = i + 1; j < array.length; j++) {
+              i++;
+              if (!array[i].includes("”")) {
+                array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+                array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+                array[i] = "<i>" + array[i] + "</i>";
+              }
+              else {
+                array[i] = array[i].replace(/<\/\w+>/g, "</i>");
+                array[i] = array[i].replace(/<(?!\/?(?:i|\/i)>)[^>]+>/g, "<i>");
+                break;
+              }
+            }
+          }
+
+        }
+        ////////
+        arraywithunderline = array
+        console.log(arraywithunderline);
+        var goodstring = arrayToString(arraywithunderline); // convert the array of underlined phrases to a string
+        console.log("before" + goodstring);
+
+        goodstring = removeSpaceAfterHyphen(goodstring);
+        console.log("after" + goodstring);
+        //goodstring=goodstring.charAt(0).toUpperCase() + goodstring.slice(1);
+        $('#spellcheckArea').html(goodstring + "&nbsp;");
+
+        var size = $("#spellcheckArea").text().length - 2;
+        caret.setPos(caretpos);
+        for (var i = 0; i < arraywithunderline.length; i++) {
+          var errornum = "#error" + i;
+
+          $(errornum).click(function () {
+            $('#ddsuggest').remove();
+            var value = $(this).text();
+            var errornumber = $(this).attr('id');
+            var id = extractDigits(errornumber);
+            var value = $(this).text();
+            value = value.toLowerCase();
+            $.ajax({
+              url: "/processUserInfo",
+              type: "POST",
+              data: { "value": value },
+              success: function (response) {
+                //console.log(response);
+                var arrres = response.words;
+                //console.log(arrres);
+                score7 = arrres;
+                //to create a dropdown of suggestions#absolute
+                var dropdownstring = "<select id=\"ddsuggest\" style='position: relative;margin-left: -40px;margin-top: -140px;margin-right: -20px;margin-bottom: -80px;overflow-y: auto;'>";
+                dropdownstring = dropdownstring + "<option style='background-color:orange;'>Sizesion</option>"
+                //Pezz sa ti fles la pu gayn sizesyon 
+                for (var d = 0; d < score7.length; d++) {
+                  dropdownstring = dropdownstring + "<option value='" + score7[d] + "'>" + score7[d] + "</option";
+                  dropdownstring = dropdownstring + "</select>";
+                }
+                //end of dropdown creation
+                var suggestnum = "#suggestions" + id;
+                $(suggestnum).html(dropdownstring);
+                $('#ddsuggest').hover(function () {
+
+                  $(this).attr('size', $('option').length);
+                }, function () {
+
+                  $(this).attr('size', 1);
+                });
+
+                $("#ddsuggest").mouseleave(function () {
+                  $("#ddsuggest").hide();
+                });
+                var selectedsuggestion;
+                $("select#ddsuggest").change(function () {
+                  selectedsuggestion = $(this).children("option:selected").text();
+                  //alert(selectedsuggestion);
+                  var errNo = "#" + errornumber;
+                  $(errNo).html(selectedsuggestion);
+                  $(errNo).removeAttr("style");
+                  $('#ddsuggest').remove();
+                });
+              }
+            });
+
+
+          });
+        }
+
+
+
+
+      });
+      $('#spellcheckArea').on('input', function () {
+        var words = $(this).text().trim().split(/\s+/);
+        if (words.length === 1 && words[0] === '') {
+          $('#numwords').html('0');
+        } else {
+          $('#numwords').html(words.length);
+        }
+        var charCount = $(this).text().length;
+        if (charCount === 0) {
+          $('#numchars').html('0');
+        } else {
+          $('#numchars').html(charCount - 1);
+        }
+
+      });
+      //count number of errors
+      setInterval(function () {
+        var redUnderlineCount = $('*').filter(function () {
+          return $(this).css('text-decoration-color') === 'rgb(255, 0, 0)';
+        }).length;
+        $('#numerrs').html(redUnderlineCount - 1);
+      }, 500);
+      //count number of errors end Headers
+      //control z operation
+      var undoStack = [];
+      var redoStack = [];
+
+      // Capture the keydown event on the contenteditable paragraph
+      $('#spellcheckArea').on('keydown', function (event) {
+        if (event.ctrlKey && event.which === 90) {
+          event.preventDefault();
+          if (undoStack.length > 0) {
+            var lastState = undoStack.pop();
+            redoStack.push($(this).html());
+            $(this).html(lastState);
+          }
+        }
+      });
+
+      // Capture the input event on the contenteditable paragraph
+      $('#spellcheckArea').on('input', function () {
+        undoStack.push($(this).html());
+        redoStack = [];
+      });
+      //end of control z
+      //button copy functionality
+      $('#btncopy').click(function () {
+        // Get the contenteditable paragraph
+        const editable = $('[contenteditable]');
+
+        // Create a range object and select the text inside the paragraph
+        const range = document.createRange();
+        range.selectNodeContents(editable[0]);
+
+        // Add the selected text to the clipboard
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand('copy');
+
+        // Deselect the text and provide feedback
+        selection.removeAllRanges();
+        $('#btncopy').text("Copied");
+        setTimeout(
+          function () {
+            $('#btncopy').text("Copy");
+          }, 1000);
+      });
+      //end of copy
+      //paste function
+      $('#btnpaste').click(function () {
+        // Get the content of the clipboard
+        navigator.clipboard.readText().then(function (text) {
+          // Set the text of the paragraph
+          $('#spellcheckArea').html(text);
+          var words = $('#spellcheckArea').text().trim().split(/\s+/);
+              if (words.length === 1 && words[0] === '') {
+                $('#numwords').html('0');
+              } else {
+                $('#numwords').html(words.length);
+              }
+              var charCount = $('#spellcheckArea').text().length;
+              if (charCount === 0) {
+                $('#numchars').html('0');
+              } else {
+                $('#numchars').html(charCount - 1);
+              }
+          $('#spellcheckArea').trigger('keyup');
+        });
+      });
+      //end of paste
+      //clear function
+      $('#btnclear').click(function () {
+        // Clear the text of the paragraph
+        $('#spellcheckArea').text('');
+        $('#results').text('');
+        $('#filename').text('');
+        $('#imagename').text('');
+        var words = $('#spellcheckArea').text().trim().split(/\s+/);
+        if (words.length === 1 && words[0] === '') {
+          $('#numwords').html('0');
+        } else {
+          $('#numwords').html(words.length);
+        }
+        var charCount = $('#spellcheckArea').text().length;
+        if (charCount === 0) {
+          $('#numchars').html('0');
+        }
+      });
+      //end of clear
+      /////////////////////////////////////file input name for file upload
+      const fileInput = document.getElementById('file-input');
+      const fileLabel = document.getElementById('file-label');
+      const filenameElement = document.getElementById('filename');
+
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.addEventListener('load', () => {
+          filenameElement.textContent = file.name;
+        });
+
+        reader.readAsDataURL(file);
+      });
+
+
+
+      /////////////////////////////////////
+
+      /////////////////////////////////////ocr file name
+      const fileInputOcr = document.getElementById('file-input-ocr');
+      const fileLabelOcr = document.getElementById('file-label-ocr');
+      const filenameElementOcr = document.getElementById('imagename');
+
+      fileInputOcr.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.addEventListener('load', () => {
+          filenameElementOcr.textContent = file.name;
+          $('#spellcheckArea').html('<div class="loader"></div>Please wait your request is being processed');
+        });
+
+        reader.readAsDataURL(file);
+      });
+
+
+
+      /////////////////////////////////////
+
+      /////////////////////////////////////////////////////////ocr upload flask
+      // Get the file input element
+      // Get the file input element
+      var fileInputOcrP = document.getElementById('file-input-ocr');
+
+      // Listen for changes in the file input
+      fileInputOcrP.addEventListener('change', function () {
+        // Create a new FormData object
+        var formData = new FormData();
+
+        // Add the selected file to the FormData object
+        var file = fileInputOcrP.files[0];
+        formData.append('image', file);
+
+        // Create an XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
+
+        // Set up the request
+        xhr.open('POST', '/upload'); // Replace '/upload' with your server endpoint
+
+        // Set the response type
+        xhr.responseType = 'json';
+
+        // Set up the event handler for when the request completes
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            // Request was successful
+            var response = xhr.response;
+            // Handle the response from the server
+            if (response.success == true) {
+              $('#spellcheckArea').html(response.message);
+              var words = $('#spellcheckArea').text().trim().split(/\s+/);
+              if (words.length === 1 && words[0] === '') {
+                $('#numwords').html('0');
+              } else {
+                $('#numwords').html(words.length);
+              }
+              var charCount = $('#spellcheckArea').text().length;
+              if (charCount === 0) {
+                $('#numchars').html('0');
+              } else {
+                $('#numchars').html(charCount - 1);
+              }
+              $('#spellcheckArea').trigger('keyup');
+            }
+          } else {
+            // Request failed
+            console.error('Error: ' + xhr.status);
+          }
+        };
+
+        // Send the request with the FormData object
+        xhr.send(formData);
+      });
+
+
+      /////////////////////////////////////////////////////////
+
+      ////////////////////////////////////////filecontent to contenteditable
+      $('#file-input').on('change', function (event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          $('#spellcheckArea').html(event.target.result);
+          var words = $('#spellcheckArea').text().trim().split(/\s+/);
+              if (words.length === 1 && words[0] === '') {
+                $('#numwords').html('0');
+              } else {
+                $('#numwords').html(words.length);
+              }
+              var charCount = $('#spellcheckArea').text().length;
+              if (charCount === 0) {
+                $('#numchars').html('0');
+              } else {
+                $('#numchars').html(charCount - 1);
+              }
+          $('#spellcheckArea').trigger('keyup');
+        }
+
+        reader.readAsText(file);
+      });
+      /////////////////////////////////////////
+    });
+    /////////////////////////text completion
+    var resultsContainer;
+    var currentWordResults;
+    function searchWords() {
+      // Get the input value from the spellcheckArea
+      var input = document.getElementById("spellcheckArea").textContent;
+      console.log(input + "@@@@@@@@@@@@");
+      // Split the input into individual words
+      var words = input.split(" ");
+      words = words.map(function (element) {
+        return element.trim();
+      });
+      console.log(+"%%%%");
+      // Clear previous results if space is entered
+      if (words[words.length - 1] === "") {
+        resultsContainer.innerHTML = "";
+        currentWordResults = null;
+      } else {
+        // Filter the dictionaryarr for the current word
+        var word = words[words.length - 1];
+        if (word.length >= 3) {
+          currentWordResults = dictionaryarr.filter(function (item) {
+            return item.startsWith(word);
+          });
+        } else {
+          currentWordResults = null;
+        }
+      }
+
+      // Display the results for the current word
+      if (currentWordResults) {
+        var wordResults = document.createElement("span");
+        wordResults.innerHTML = currentWordResults.slice(0, 10).join(", ");
+        resultsContainer.innerHTML = "&nbsp;";
+        resultsContainer.appendChild(wordResults);
+      }
+      else {
+        $('#results').html('&nbsp;');
+      }
+
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      resultsContainer = document.getElementById("results");
+    });
+
+  </script>
+</head>
+
+<body>
+  {% extends "navbar.html" %}
+  {% block content %}
+  <div class="container">
+    <label style="color:red;">Did you mean?</label><span id="results"></span>
+    <p class="editor" contenteditable="true" id="spellcheckArea" spellcheck="false" style="overflow: auto;"
+      data-placeholder="Type here..." oninput="searchWords()"></p>
+    <div class="button-label-container">
+      <div class="button-container">
+        <button id="btncopy" class="button"><i class="fas fa-copy"></i>Copy</button>
+        <button id="btnpaste" class="button"><i class="fas fa-paste"></i>Paste</button>
+        <button id="btnclear" class="button"><i class="fas fa-trash"></i>Clear</button>
+        <label for="file-input-ocr" class="button" id="file-label-ocr"><i class="fas fa-image"></i>OCR</label>
+        <input type="file" id="file-input-ocr" style="display:none;">
+        <span id="imagename"></span>
+        <label for="file-input" class="button" id="file-label"><i class="fas fa-upload"></i>Upload file</label>
+        <input type="file" id="file-input" style="display:none;" accept="text/plain">
+        <span id="filename"></span>
+      </div>
+      <div class="label-container">
+        <label>Number of Characters:<span id="numchars">0</span> </label>
+        <label>Number of Words : <span id="numwords">0</span></label>
+        <label>Number of Errors :<span id="numerrs">0</span></label>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+</body>
+
+</html>

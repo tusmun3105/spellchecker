@@ -1,0 +1,397 @@
+<html>
+
+<head>
+  <title>Run my Python files</title>
+  <style>
+    [contenteditable] {
+      outline: 0px solid transparent;
+    }
+
+    #spellcheckArea {
+      height: 200px;
+      width: 800px;
+      margin-left: 225px;
+      margin-top: 50px;
+      margin-right: 100px;
+      margin-bottom: 25px;
+      background-color: #404040;
+      color: white;
+    }
+
+    h1 {
+      margin-left: 240px;
+      color: gray;
+      padding-top: 50px;
+    }
+
+    #spellcheckArea:empty:before {
+      content: attr(data-placeholder);
+    }
+
+    #spellcheckArea:empty:before {
+      content: attr(placeholder);
+      position: absolute;
+      color: gray;
+      background-color: transparent;
+    }
+
+    body {
+
+      background-image: url('static/image/bg.jpg');
+
+    }
+
+    table tr {
+      color: blue;
+    }
+
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+    }
+
+    span {
+      display: inline-block;
+    }
+
+    #ddsuggest {
+      background-color: grey;
+    }
+
+    #chars {
+      color: grey;
+      padding-left: 875px;
+    }
+
+    button {
+
+      background-color: grey;
+      font-size: 14px;
+      color: #fff;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0px 0px 2px 2px rgb(0, 0, 0);
+      width: 100px;
+      height: 25px;
+      text-align: center;
+    }
+
+    button:hover {
+      background-color: #303030
+    }
+
+    button:active {
+      background-color: #3e8e41;
+      box-shadow: 0 5px #666;
+      transform: translateY(4px);
+    }
+
+    input[type=file]::file-selector-button {
+      border-radius: 15px;
+      border: none;
+      background: grey;
+
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100px;
+      height: 25px;
+    }
+
+    input[type=file]::file-selector-button:hover {
+      background: #303030;
+    }
+    #ddsuggest {
+    position: absolute;
+    background-color: grey;
+    z-index: 1;
+}
+  </style>
+  <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-caret-js@1.1.0/dist/VanillaCaret.min.js"></script>
+  <script src="{{ url_for('static', filename='script/script.js')}}" type="text/javascript">
+  </script>
+  <script>
+
+
+    $(document).ready(function () {
+      var dictionaryarr = new Array();
+     // $.get('static/sorted_words.txt', function (data) {
+      //  dictionaryarr = data.split('\r\n');
+      //});
+      ////////////////////////////
+      $.ajax({
+  url: '/get-words-from-mongo',
+  type: 'GET',
+  dataType: 'json',
+  success: function(data) {
+    // Process the data
+    for (var i = 0; i < data.length; i++) {
+      dictionaryarr.push(data[i].word);
+    }
+    console.log("lennnn"+data.length)
+    // Sort the array
+    dictionaryarr.sort();
+    
+    // Do something with the sorted array
+    console.log(dictionaryarr);
+  },
+  error: function(xhr, textStatus, errorThrown) {
+    console.log('Error:', textStatus, errorThrown);
+  }
+});
+      ///////////////////////////
+      $('#ddsuggest').remove();
+      $("#spellcheckArea").keyup(function () {
+        $('#ddsuggest').remove();
+        var caret = new VanillaCaret(document.getElementById('spellcheckArea')); // Initialize
+        var caretpos = caret.getPos();
+        console.log("The cursorpos is :"+caretpos);
+        var sentence = $("#spellcheckArea").text();
+        sentence=capAfterDot(sentence);
+        console.log(sentence+" ");
+        sentence = removeStartingPunctuations(sentence);
+        var tokensarray = splitSentence(sentence);
+        console.log('tokensarr----->'+tokensarray);
+        var allwords = extractPunctuation(tokensarray);
+        console.log('allwords----->'+allwords);
+        var arrayphrase = splitWords(allwords);
+        console.log('arrayphrase----->'+arrayphrase);
+        arrayphrase = removeAdjacentPunctuations(arrayphrase);
+        var positions = findPositions(dictionaryarr, arrayphrase);
+        var arraywithunderline = underlineElements(arrayphrase, positions)
+        var goodstring = arrayToString(arraywithunderline);
+         console.log(arraywithunderline);
+        //console.log(goodstring);
+        $('#spellcheckArea').html(goodstring + "&nbsp;&nbsp;");
+        var size=$("#spellcheckArea").text().length-2;
+        // console.log("size:"+size);
+        // console.log("caretaftersize:"+size);
+        // if(caret.getPos()<size){
+        //   //console.log("caretaftersize:"+size);
+        //   caret.setPos(caretpos)
+        //   if(caret.getPos()<size){caret.setPos(caret.getPos()+1);}//sasa
+        // }
+    
+        //console.log("The cursorpos2 is :"+caretpos);
+        caret.setPos(caretpos)
+        for (var i = 0; i < arraywithunderline.length; i++) {
+          var errornum = "#error" + i;
+
+          $(errornum).mouseenter(function () {
+            $('#ddsuggest').remove();
+            //alert($(this).attr('id'));
+            var value = $(this).text();
+            var errornumber = $(this).attr('id');
+            var id = extractDigits(errornumber);
+            var removeadds = replaceWord(value);
+            //             /*using phonix here */
+            //             var closestWordss=[];
+            //             for(var s=0;s<dictionaryarr.length;s++){
+            //               closestWordss[s]=phoenix(removeadds,dictionaryarr[s]);
+            //             }
+            //             var score7=[];
+            //             console.log(closestWordss);
+            //             for(var ks=0;ks<closestWordss.length;ks++){
+            //              if(closestWordss[ks]>=0.7){score7.push(dictionaryarr[ks]);}
+
+            //             }
+            //                                   //to create a dropdown of suggestions
+            //            var dropdownstring="<select id=\"ddsuggest\">";
+            //            dropdownstring=dropdownstring+"<option>Sizesyon</option>"
+            //            //Pezz sa ti fles la pu gayn sizesyon 
+            //            for(var d=0;d<score7.length;d++){
+            //             dropdownstring=dropdownstring+"<option value='"+score7[d]+"'>"+score7[d]+"</option";
+            //             dropdownstring=dropdownstring+"</select>";
+            //            }
+            //             //end of dropdown creation
+            //             var suggestnum="#suggestions"+id;
+            //             $(suggestnum).html(dropdownstring);
+            //             //$(suggestnum).html(dropdownstring);
+            //             //$('#suggestions0').fadeIn();
+            //             var selectedsuggestion;
+            //             $("select#ddsuggest").change (function () {  
+            //       selectedsuggestion = $(this).children("option:selected").val();  
+            //       //alert(selectedsuggestion);
+            //       var errNo="#"+errornumber;
+            //       $(errNo).html(selectedsuggestion);
+            //       $(errNo).removeAttr("style");
+            //       $('#ddsuggest').remove();
+            // });
+            //             /*end of phonix here */
+            //          if(score7.length==0){
+            //              console.log("empgt");
+            //////////////////////
+            var value = $(this).text();
+            $.ajax({
+              url: "/processUserInfo",
+              type: "POST",
+              data: { "value": value },
+              success: function (response) {
+                //console.log(response);
+                var arrres = response.words;
+                //console.log(arrres);
+                score7 = arrres;
+                //to create a dropdown of suggestions
+                var dropdownstring = "<select id=\"ddsuggest\">";
+                dropdownstring = dropdownstring + "<option>Sizesyon</option>"
+                //Pezz sa ti fles la pu gayn sizesyon 
+                for (var d = 0; d < score7.length; d++) {
+                  dropdownstring = dropdownstring + "<option value='" + score7[d] + "'>" + score7[d] + "</option";
+                  dropdownstring = dropdownstring + "</select>";
+                }
+                //end of dropdown creation
+                var suggestnum = "#suggestions" + id;
+                $(suggestnum).html(dropdownstring);
+                //$(suggestnum).html(dropdownstring);
+                //$('#suggestions0').fadeIn();
+                var selectedsuggestion;
+                $("select#ddsuggest").change(function () {
+                  selectedsuggestion = $(this).children("option:selected").val();
+                  //alert(selectedsuggestion);
+                  var errNo = "#" + errornumber;
+                  $(errNo).html(selectedsuggestion);
+                  $(errNo).removeAttr("style");
+                  $('#ddsuggest').remove();
+                });
+              }
+            });
+            /////////////////////
+            //score7= findClosestWords(removeadds,dictionaryarr );//using edit-distance
+            //  }
+
+
+
+            //var closestWords = findClosestWords(removeadds,dictionaryarr );//arrsuggest
+
+
+
+
+          });
+        }
+
+
+
+
+      });
+      $('#spellcheckArea').on('input', function () {
+        var words = $(this).text().trim().split(/\s+/);
+        if (words.length === 1 && words[0] === '') {
+          $('#numwords').html('0');
+        } else {
+          $('#numwords').html(words.length);
+        }
+        var charCount = $(this).text().length;
+        if (charCount === 0) {
+          $('#numchars').html('0');
+        } else {
+          $('#numchars').html(charCount - 1);
+        }
+
+      });
+      //count number of errors
+      setInterval(function () {
+        var redUnderlineCount = $('*').filter(function () {
+          return $(this).css('text-decoration-color') === 'rgb(255, 0, 0)';
+        }).length;
+        $('#numerrs').html(redUnderlineCount);
+      }, 500);
+      //count number of errors end Headers
+      //control z operation
+      var undoStack = [];
+      var redoStack = [];
+
+      // Capture the keydown event on the contenteditable paragraph
+      $('#spellcheckArea').on('keydown', function (event) {
+        if (event.ctrlKey && event.which === 90) {
+          event.preventDefault();
+          if (undoStack.length > 0) {
+            var lastState = undoStack.pop();
+            redoStack.push($(this).html());
+            $(this).html(lastState);
+          }
+        }
+      });
+
+      // Capture the input event on the contenteditable paragraph
+      $('#spellcheckArea').on('input', function () {
+        undoStack.push($(this).html());
+        redoStack = [];
+      });
+      //end of control z
+      //button copy functionality
+      $('#btncpy').click(function () {
+        // Get the contenteditable paragraph
+        const editable = $('[contenteditable]');
+
+        // Create a range object and select the text inside the paragraph
+        const range = document.createRange();
+        range.selectNodeContents(editable[0]);
+
+        // Add the selected text to the clipboard
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand('copy');
+
+        // Deselect the text and provide feedback
+        selection.removeAllRanges();
+        $('#btncpy').text("Copied");
+        setTimeout(
+          function () {
+            $('#btncpy').text("Copy");
+          }, 1000);
+      });
+      //end of copy
+      //paste function
+      $('#btnpaste').click(function () {
+        // Get the content of the clipboard
+        navigator.clipboard.readText().then(function (text) {
+          // Set the text of the paragraph
+          $('#spellcheckArea').html(text);
+
+        });
+      });
+      //end of paste
+      //clear function
+      $('#btnclear').click(function () {
+        // Clear the text of the paragraph
+        $('#spellcheckArea').text('');
+        var words = $('#spellcheckArea').text().trim().split(/\s+/);
+        if (words.length === 1 && words[0] === '') {
+          $('#numwords').html('0');
+        } else {
+          $('#numwords').html(words.length);
+        }
+        var charCount = $('#spellcheckArea').text().length;
+        if (charCount === 0) {
+          $('#numchars').html('0');
+        } else {
+          $('#numchars').html(charCount - 1);
+        }
+      });
+      //end of clear
+    });
+  </script>
+</head>
+
+<body>
+  <h1>Kreol Morisien Real Time Spell Checker and Corrector</h1>
+  <p contenteditable id="spellcheckArea" spellcheck="false" placeholder="Type here..."></p>
+  <div id="btnNspan">
+    <button id="btncpy" style="margin-left:225px; ">Copy</button>
+    <button id="btnpaste" style="margin-left:25px; ">Paste</button>
+    <button id="btnclear" style="margin-left:25px; ">Clear</button>
+    <input type="file" id="myFile" name="filename" style="margin-left:25px; color:grey; ">
+    <div id="chars">
+      <span id="numwords">0</span> :Number of words<br />
+      <span id="numchars">0</span> :Number of Characters<br />
+      <span id="numerrs">0</span> :Number of Errors
+    </div>
+  </div>
+</body>
+
+</html>

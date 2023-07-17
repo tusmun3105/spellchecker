@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body {
+      background-color: bisque;
+      color: #fff;
+      overflow-x: hidden;
+      /* Prevent horizontal scrollbar */
+    }
+
+    .table-container_out {
+      display: flex;
+      padding-top: 100px;
+    }
+
+    .table-container {
+      max-height: 300px;
+      /* Set a maximum height for the container */
+      overflow-y: auto;
+      /* Enable vertical scrolling */
+      width: 50%;
+      /* Use flexbox to arrange child elements */
+
+    }
+
+    .search-field input[type="text"] {
+      /* Make the input field occupy the full width of the container */
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #444;
+      color: #fff;
+    }
+
+    .search-field {
+      padding-top: 100px;
+      padding-left: 50px;
+    }
+
+    table {
+      width: 100%;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #444;
+      color: #fff;
+    }
+
+    tr:nth-child(even) {
+      background-color: #333;
+    }
+
+    .highlight {
+      color: yellow;
+    }
+
+    button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    button:active {
+      background-color: #222;
+    }
+
+    body {
+      background-color: #222;
+    }
+
+    .message {
+      padding: 10px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      color: #fff;
+      max-width: 300px;
+      box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.2);
+      display: none;
+      font-family: Goudy Old Style;
+      box-shadow: 0 0 15px rgb(255, 255, 255);
+    }
+
+    .error {
+      background-color: #ff0015;
+    }
+
+    .success {
+      background-color: #008b6f;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      var password = sessionStorage.getItem('password');
+
+      if (password !== null && password !== '') {
+        // Password is not null or empty
+        // Perform the desired action here
+        console.log('Password is not null or empty.');
+      } else {
+        // Password is null or empty
+        console.log('Password is null or empty.');
+        window.location.href = '/admin';
+      }
+
+      document.getElementById('adminLink').style.display = 'none';
+      $.ajax({
+        url: "/get_words",
+        type: "GET",
+        success: function (response) {
+          // Handle the response containing the words
+          var tablestring = "<table id='myTable'><thead><tr><th>Dictionary</th></tr></thead><tbody>";
+          for (var i = 0; i < response.length; i++) {
+            tablestring = tablestring + "<tr><td>";
+              tablestring = tablestring +(i+1)+" "+response[i];
+            tablestring = tablestring + "</td></tr>";
+          }
+          tablestring = tablestring + "</tbody></table>";
+          $('#displaytable').html(tablestring);
+          // You can perform further processing or rendering here
+          //$('#displaytable').html(response[1]);
+        },
+        error: function (xhr, status, error) {
+          // Handle the error case
+        }
+      });
+      $('#addWordButton').click(function () {
+        var word = $('#wordInput').val().trim();
+        if (!word) {
+          //alert('Error: Word cannot be empty');
+          displayErrorMessage('Error: Word cannot be empty');
+          hideSuccessMessage();
+          setTimeout(hideErrorMessage, 2000);
+          return;
+        }
+        $.ajax({
+          url: '/add_word',
+          type: 'POST',
+          data: { word: word },
+          success: function (response) {
+            //alert(response);
+            if (response.msg == 31) {
+              displayErrorMessage('Error: Word cannot be empty');
+              hideSuccessMessage();
+              setTimeout(hideErrorMessage, 2000);
+            }
+            if (response.msg == 32) {
+              displayErrorMessage("Error: Word already exists in the dictionary");
+              hideSuccessMessage();
+              setTimeout(hideErrorMessage, 2000);
+            }
+            if (response.msg == 33) {
+              displaySuccessMessage("Success: Word added to the dictionary");
+              hideErrorMessage();
+              setTimeout(hideSuccessMessage, 4000);
+            }
+
+            $.ajax({
+              url: "/get_words",
+              type: "GET",
+              success: function (response) {
+                // Handle the response containing the words
+                var tablestring = "<table id='myTable'><thead><tr><th>Dictionary</th></tr></thead><tbody>";
+                for (var i = 0; i < response.length; i++) {
+                  tablestring = tablestring + "<tr><td>";
+                  tablestring = tablestring +(i+1)+"  "+ response[i];
+                  tablestring = tablestring + "</td></tr>";
+                }
+                tablestring = tablestring + "</tbody></table>";
+                $('#displaytable').html(tablestring);
+                // You can perform further processing or rendering here
+                //$('#displaytable').html(response[1]);
+              },
+              error: function (xhr, status, error) {
+                // Handle the error case
+              }
+            });
+          },
+          error: function (xhr, status, error) {
+            //alert('Error: ' + error);
+            displayErrorMessage('Error: ' + error);
+            hideSuccessMessage();
+            setTimeout(hideErrorMessage, 2000);
+          }
+        });
+      });
+      ///delete functionality
+      $('#deleteButton').click(function () {
+        var word = $('#wordDel').val().trim();
+        if (!word) {
+          //alert('Error: Word cannot be empty');
+          displayErrorMessage('Error: Word cannot be empty');
+          hideSuccessMessage();
+          setTimeout(hideErrorMessage, 2000);
+          return;
+        }
+        $.ajax({
+          url: '/check_word',
+          type: 'POST',
+          data: { word: word },
+          success: function (response) {
+            if (response.exists) {
+              if (confirm("Are you sure you want to delete the word?")) {
+                $.ajax({
+                  url: '/delete_word',
+                  type: 'POST',
+                  data: { word: word },
+                  success: function (response) {
+                    if (response.message == 1) {
+                      // alert('Word deleted successfully');
+                      displaySuccessMessage('Word deleted successfully');
+                      hideErrorMessage();
+                      setTimeout(hideSuccessMessage, 4000);
+                      $.ajax({
+                        url: "/get_words",
+                        type: "GET",
+                        success: function (response) {
+                          // Handle the response containing the words
+                          var tablestring = "<table id='myTable'><thead><tr><th>Dictionary</th></tr></thead><tbody>";
+                          for (var i = 0; i < response.length; i++) {
+                            tablestring = tablestring + "<tr><td>";
+                              tablestring = tablestring +(i+1)+"  "+ response[i];
+                            tablestring = tablestring + "</td></tr>";
+                          }
+                          tablestring = tablestring + "</tbody></table>";
+                          $('#displaytable').html(tablestring);
+                          // You can perform further processing or rendering here
+                          //$('#displaytable').html(response[1]);
+                        },
+                        error: function (xhr, status, error) {
+                          // Handle the error case
+                        }
+                      });
+                    }
+                  },
+                  error: function (xhr, status, error) {
+                    // alert('Error deleting word: ' + error);
+                    displayErrorMessage('Error deleting word: ' + error);
+                    hideSuccessMessage();
+                    setTimeout(hideErrorMessage, 2000);
+                  }
+                });
+              }
+            } else {
+              //alert('Word does not exist in the dictionary');
+              displayErrorMessage('Word does not exist in the dictionary');
+              hideSuccessMessage();
+              setTimeout(hideErrorMessage, 2000);
+            }
+          },
+          error: function (xhr, status, error) {
+            // alert('Error checking word: ' + error);
+            displayErrorMessage('Error checking word: ' + error);
+            hideSuccessMessage();
+            setTimeout(hideErrorMessage, 2000);
+          }
+        });
+      });
+    });
+    ///////////search functionality
+    function searchTable() {
+      var searchTerm = document.getElementById('search').value.trim().toLowerCase();
+      var table = document.getElementById('myTable');
+      var rows = table.getElementsByTagName('tr');
+
+      var elementFound = false;
+
+      for (var i = 0; i < rows.length; i++) {
+        var cells = rows[i].getElementsByTagName('td');
+        for (var j = 0; j < cells.length; j++) {
+          var cellText = cells[j].textContent.trim().toLowerCase();
+          cellText=cellText.replace(/^\d+\s/, '');
+          if (cellText === searchTerm) {
+            cells[j].classList.add('highlight');
+            cells[j].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            elementFound = true;
+          } else {
+            cells[j].classList.remove('highlight');
+          }
+        }
+      }
+      if (!elementFound) {
+        //alert("Element does not exist in the table.");
+        displayErrorMessage("Element does not exist in the table.");
+        hideSuccessMessage();
+        setTimeout(hideErrorMessage, 2000);
+      }
+    }
+    function displayErrorMessage(message) {
+      var errorMessage = document.getElementById('error-message');
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+    }
+
+    function displaySuccessMessage(message) {
+      var successMessage = document.getElementById('success-message');
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+    }
+
+    function hideErrorMessage() {
+      var errorMessage = document.getElementById('error-message');
+      errorMessage.style.display = 'none';
+    }
+
+    function hideSuccessMessage() {
+      var successMessage = document.getElementById('success-message');
+      successMessage.style.display = 'none';
+    }
+  </script>
+</head>
+{% extends "navbar.html" %}
+
+<body style=" display: flex;">
+  {% block content %}
+  <div class="table-container_out">
+    <div class="table-container" id="displaytable">
+    </div>
+    <div class="search-field">
+      <input type="text" id="search" placeholder="Enter search term" autocomplete="off">
+      <button onclick="searchTable()">Search</button>
+
+      <div class="add-field" style="padding-top: 10px;">
+        <input type="text" id="wordInput" placeholder="Enter a word" autocomplete="off">
+        <button id="addWordButton">Add Word</button>
+      </div>
+      <div class="delete-field" style="padding-top: 10px;">
+        <input type="text" id="wordDel" placeholder="Enter a word">
+        <button id="deleteButton">Delete Word</button>
+      </div>
+    </div>
+    <div class="message-container">
+      <div id="error-message" class="message error"></div>
+      <div id="success-message" class="message success"></div>
+    </div>
+  </div>
+  {% endblock %}
+</body>
+
+</html>

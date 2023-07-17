@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .request-response {
+            display: flex;
+        }
+
+        .request {
+            flex-basis: 50%;
+            margin-right: 10px;
+        }
+
+        .response {
+            flex-basis: 50%;
+        }
+
+        .method {
+            background-color: #6c821d;
+            padding: 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        code {
+            background-color: #e0efef;
+            padding: 10px;
+            color: black;
+            font-family: Consolas, monospace;
+        }
+
+        button {
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 14px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            border-radius: 6px;
+            border: none;
+            background: #6E6D70;
+            box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.1), inset 0px 0.5px 0.5px rgba(255, 255, 255, 0.5), 0px 0px 0px 0.5px rgba(0, 0, 0, 0.12);
+            color: #DFDEDF;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        button:focus {
+            box-shadow: inset 0px 0.8px 0px -0.25px rgba(255, 255, 255, 0.2), 0px 0.5px 1px rgba(0, 0, 0, 0.1), 0px 0px 0px 3.5px rgba(118, 234, 89, 0.5);
+            outline: 0;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            $("#checkButton").click(function () {
+                var textFieldValue = $("#scw").val();
+                if ($.trim(textFieldValue) === "") {
+                    alert("Please enter a word");
+                } else {
+                    $.ajax({
+                        url: "/api/spellcheck?word=" + textFieldValue,
+                        type: "GET",
+                        success: function (response) {
+                            var prettyResponse = JSON.stringify(response, null, 2);
+                            var resp = document.getElementById("resp");
+                            resp.textContent = prettyResponse;
+                        },
+                        error: function (xhr, status, error) {
+                            // Handle the error here
+                            $('#resp').html(error);
+                        }
+                    });
+                }
+
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+    {% extends "navbar.html" %}
+    {% block content %}
+    <div style=" color: #a1a4a4; font-family: Arial;">
+        <div class="section" style="padding-top: 50px;">
+            <h1>Description</h1>
+            <p>
+                This API allows you to:<br />
+                1. spellcheck a Kreol Morisien Word.<br />
+                2. It returns whether the word to spellcheck is correct or not.<br />
+                3. It as well returns the Top 8 suggestions for the incorrect word.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 style="color:#6c821d; padding-left: 40px;">Request</h2>
+            <div class="request-response" style="display: inline-flex;padding-left: 40px;">
+                <div class="request">
+                    <h3>GET /api/spellcheck</h3>
+                    <p>Endpoint description.</p>
+                    <pre><span class="method">GET</span> /api/spellcheck?word=WORD</pre>
+                </div>
+                <div style="padding-left: 40px; padding-right: 40px;">
+
+                </div>
+                <div class="response" style="margin-top: -29px;">
+                    <h3 style="color:#6c821d;margin-top: -0px;">Response</h3>
+                    <p style="margin-bottom: 27px;">Status Code: <strong>200 OK</strong></p>
+                    <p>Body:</p>
+                    <pre>{
+  "State": "Incorrect",
+  "Top8": [
+    "mangie",
+    "manage",
+    "manager",
+    "manzer",
+    "manter",
+    "manier",
+    "mang",
+    "anger"
+  ],
+  "Word2Check": "manger"
+}</pre>
+                </div>
+                <div style="padding-left: 80px;">
+                    <h3 style="color:#6c821d;margin-top: -35px;">Try</h3>
+                    <input type="text" placeholder="Enter word..." required id="scw" />
+                    <button id="checkButton">Check</button>
+                    <br /><br />
+                    Response:
+                    <pre id="resp" style="width: 250px; height: 225px; background-color: #e0efef;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        {% endblock %}
+</body>
+
+</html>
