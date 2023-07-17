@@ -16,8 +16,8 @@ import json
 from soundex import find_matching_soundex
 config = configparser.ConfigParser()
 config.read('static\config.ini')
-connectionstring = config.get('DEFAULT', 'DBConnectionString')
 apiURL = config.get('DEFAULT', 'api_URL')
+connectionstring = config.get('DEFAULT', 'DBConnectionString')
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
