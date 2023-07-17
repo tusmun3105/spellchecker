@@ -21,7 +21,13 @@ connectionstring = 'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongo
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
-client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+# Set the socket timeout value in milliseconds (e.g., 90 seconds)
+socket_timeout = 90000
+
+# Create the MongoClient instance
+client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE, serverSelectionTimeoutMS=socket_timeout)
+
+#client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
 db = client['KreolDB']
 collection = db['dictionary']
 result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
