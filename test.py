@@ -19,7 +19,8 @@ config.read('static\config.ini')
 # config.get('DEFAULT', 'api_URL')
 apiURL = 'https://api.api-ninjas.com/v1/imagetotext'
 # config.get('DEFAULT', 'DBConnectionString')
-connectionstring = 'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongodb.net/?retryWrites=true&w=majority'
+connectionstring =os.getenv('MONGODB_URI')
+#'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongodb.net/?retryWrites=true&w=majority'
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
