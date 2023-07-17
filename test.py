@@ -16,8 +16,8 @@ import json
 from soundex import find_matching_soundex
 config = configparser.ConfigParser()
 config.read('static\config.ini')
-apiURL = config.get('DEFAULT', 'api_URL')
-connectionstring = config.get('DEFAULT', 'DBConnectionString')
+apiURL = 'https://api.api-ninjas.com/v1/imagetotext' #config.get('DEFAULT', 'api_URL')
+connectionstring = 'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongodb.net/?retryWrites=true&w=majority' #config.get('DEFAULT', 'DBConnectionString')
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
