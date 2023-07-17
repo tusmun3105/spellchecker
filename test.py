@@ -27,7 +27,7 @@ words = []
 #socket_timeout = 9000
 
 # Create the MongoClient instance
-client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=30000)
+client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=90000)
 
 # Check if the connection is successful
 client.admin.command('ping')
