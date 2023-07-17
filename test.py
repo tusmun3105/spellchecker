@@ -24,29 +24,22 @@ connectionstring =os.getenv('MONGODB_URI')
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
-# Set the socket timeout value in milliseconds (e.g., 90 seconds)
-socket_timeout = 90000
-try:
-    # Create the MongoClient instance
-    client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE,
-                         serverSelectionTimeoutMS=socket_timeout)
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
-    # Check if the connection is successful
-    # This line will throw an exception if the connection is not established
-    client.server_info()
+#socket_timeout = 9000
 
-    # Connection successful
-    print("Connected to the MongoDB database.")
-    db = client['KreolDB']
-    collection = db['dictionary']
-    result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
-    word_array = [obj['word'] for obj in result]
-    words = word_array
-    print(words)
-except Exception as e:
-    # Connection failed
-    print("Failed to connect to the MongoDB database:", str(e))
+# Create the MongoClient instance
+client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True)
 
+# Check if the connection is successful
+client.admin.command('ping')
+
+# Connection successful
+print("Connected to the MongoDB database.")
+
+db = client['KreolDB']
+collection = db['dictionary']
+result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
+word_array = [obj['word'] for obj in result]
+words = word_array
 app = Flask(__name__)
 
 
