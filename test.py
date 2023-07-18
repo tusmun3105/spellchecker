@@ -420,8 +420,9 @@ def remove_consecutive_letters(s):
     i = 0
     while i < len(s):
         result += s[i]
-        while i < len(s) - 1 and s[i] == s[i+1]:
-            i += 1
+        if i < len(s) - 2 and s[i] == s[i + 1] == s[i + 2]:
+            result += s[i + 1]
+            i += 2
         i += 1
     return result
 
