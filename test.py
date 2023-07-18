@@ -629,6 +629,34 @@ def transform_array(array):
     return output
 
 
+def smith_waterman_similarity(str1, str2, match_score=2, mismatch_score=-1, gap_penalty=-1):
+    rows = len(str1) + 1
+    cols = len(str2) + 1
+
+    matrix = [[0] * cols for _ in range(rows)]
+    max_score = 0
+    max_i, max_j = 0, 0
+
+    for i in range(1, rows):
+        for j in range(1, cols):
+            if str1[i - 1] == str2[j - 1]:
+                score = match_score
+            else:
+                score = mismatch_score
+
+            matrix[i][j] = max(
+                matrix[i - 1][j - 1] + score,
+                matrix[i - 1][j] + gap_penalty,
+                matrix[i][j - 1] + gap_penalty,
+                0  # Stop negative scores
+            )
+
+            if matrix[i][j] > max_score:
+                max_score = matrix[i][j]
+                max_i, max_j = i, j
+
+    return max_score
+
 def metaPhone(word, array):
     metacode_start, metacode_end = doublemetaphone(word)
     print(doublemetaphone(word))
@@ -638,16 +666,15 @@ def metaPhone(word, array):
     matchingMeta = [element for element, metaphone in arrmeta if jellyfish.jaro_winkler_similarity(
         metaphone[0], metacode_start) > 0]
 
-    sortedMeta = sorted(matchingMeta, key=lambda x: jellyfish.jaro_winkler_similarity(
-        doublemetaphone(x)[0], metacode_start), reverse=True)
+    sortedMeta = sorted(matchingMeta, key=lambda x: (jellyfish.jaro_winkler_similarity(
+        doublemetaphone(x)[0], metacode_start), smith_waterman_similarity(x, word)), reverse=True)
 
     for word in sortedMeta:
         metaphone = doublemetaphone(word)
         jaro_start_similarity = jellyfish.jaro_winkler_similarity(
             metaphone[0], metacode_start)
-        jaro_end_similarity = jellyfish.jaro_winkler_similarity(
-            metaphone[1], metacode_end)
-        print(f"Word: {word}, Metaphone: {metaphone}, Jaro-Winkler Similarity (Start): {jaro_start_similarity}, Jaro-Winkler Similarity (End): {jaro_end_similarity}")
+        smith_waterman_score = smith_waterman_similarity(word, word)
+        print(f"Word: {word}, Metaphone: {metaphone}, Jaro-Winkler Similarity (Start): {jaro_start_similarity}, Smith-Waterman Score: {smith_waterman_score}")
 
     return sortedMeta
 
