@@ -387,7 +387,6 @@ def replace_word(word):
         'aune': 'onn',
         'aud': 'o',
         'aine': 'enn',
-        'ain': 'enn',
         'auvre': 'ov',
         'auve': 'ov',
         'sul': 'zil',
