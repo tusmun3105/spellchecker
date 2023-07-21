@@ -21,14 +21,15 @@ config.read('static\config.ini')
 # config.get('DEFAULT', 'api_URL')
 apiURL = 'https://api.api-ninjas.com/v1/imagetotext'
 # config.get('DEFAULT', 'DBConnectionString')
-connectionstring =os.getenv('MONGODB_URI')
+connectionstring = os.getenv('MONGODB_URI')
 print(connectionstring)
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
 try:
     # Establish a connection to MongoDB with a timeout of 90 seconds
-    client = MongoClient(connectionstring, tls=True, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=90000)
+    client = MongoClient(connectionstring, tls=True,
+                         tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=90000)
 
     # Check if the connection is successful
     client.admin.command('ping')
@@ -285,18 +286,18 @@ def correct_word(word, words):
     y_set = set(arraysoundex)  # arraysoundex to set
 
     # Step 2: Intersection of sets (X∩Y) #(closest N arraysoundex)
-    #intersection_set = x_set.intersection(y_set)
-    #print(intersection_set,
-          "#####################intersection##################################")
+    # intersection_set = x_set.intersection(y_set)
+    # print(intersection_set,
+    #"#####################intersection##################################")
     # Step 3: Union of intersection set and X (X∩Y) U X #(closest N arraysoundex) Union closest
-    result_set = y_set.union(x_set)
+    result_set=y_set.union(x_set)
 
     # Step 4: Convert set back to array
-    result_array = list(result_set)
+    result_array=list(result_set)
     print(closest_words)
     print(result_array, "#######################################################")
     # Filter out the closest words that are not in the words array
-    closest_words = [w for w in closest_words if w in words][:8]
+    closest_words=[w for w in closest_words if w in words][:8]
 
     # Return the closest words
     return closest_words
@@ -304,7 +305,7 @@ def correct_word(word, words):
 
 def replace_word(word):
     # Define all the replacements as a dictionary
-    replacements = {
+    replacements={
         'rail': 'rel',
         'ange': 'anze',
         'oindre': 'wenn',
