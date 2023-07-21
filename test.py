@@ -718,6 +718,8 @@ def processVal(value):
         value = "ak" + value[3:]
     if value.startswith("ach"):
         value = "as" + value[3:]
+    if value.startswith("du"):
+        value = "di" + value[2:]
     if value.startswith("con"):
         value = "kon" + value[3:]
     if value.startswith("frais"):
