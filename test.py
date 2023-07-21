@@ -23,7 +23,6 @@ apiURL = 'https://api.api-ninjas.com/v1/imagetotext'
 # config.get('DEFAULT', 'DBConnectionString')
 connectionstring =os.getenv('MONGODB_URI')
 print(connectionstring)
-#'mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongodb.net/?retryWrites=true&w=majority'
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
@@ -286,11 +285,11 @@ def correct_word(word, words):
     y_set = set(arraysoundex)  # arraysoundex to set
 
     # Step 2: Intersection of sets (X∩Y) #(closest N arraysoundex)
-    intersection_set = x_set.intersection(y_set)
-    print(intersection_set,
+    #intersection_set = x_set.intersection(y_set)
+    #print(intersection_set,
           "#####################intersection##################################")
     # Step 3: Union of intersection set and X (X∩Y) U X #(closest N arraysoundex) Union closest
-    result_set = intersection_set.union(x_set)
+    result_set = y_set.union(x_set)
 
     # Step 4: Convert set back to array
     result_array = list(result_set)
