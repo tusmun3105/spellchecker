@@ -190,7 +190,14 @@
                   var errNo = "#" + errornumber;
                   $(errNo).html(selectedsuggestion);
                   $(errNo).removeAttr("style");
+                   $(errNo).removeAttr('id');
                   $('#ddsuggest').remove();
+                  var charCount = $('#spellcheckArea').text().length;
+                  if (charCount === 0) {
+                    $('#numchars').html('0');
+                  } else {
+                    $('#numchars').html(charCount - 1);
+                  }
                 });
               }
             });
