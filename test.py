@@ -73,7 +73,7 @@ def api():
 def apispellcheck():
     user_query = str(request.args.get('word'))  # /api/spellcheck?word=WORD
     user_query = user_query.lower()
-
+    
     # Assuming `processVal()` returns the response object
     response = processVal(user_query)
 
@@ -89,7 +89,7 @@ def apispellcheck():
     else:
         state = 'Incorrect'
 
-    data_set = {'Word2Check': user_query, 'State': state, 'Top8': words}
+    data_set = {'Word2Check': user_query, 'State': state, 'Top8': words} 
     return jsonify(data_set)
 
 
@@ -104,7 +104,7 @@ def get_words():
     collection_name = "dictionary"
 
     # Connect to MongoDB
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     database = client[database_name]
     collection = database[collection_name]
     words = []
@@ -116,7 +116,7 @@ def get_words():
 
 @app.route('/add_word', methods=['POST'])
 def add_word():
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     db = client['KreolDB']
     collection = db['dictionary']
     word = request.form.get('word', '').strip()
@@ -135,7 +135,7 @@ def add_word():
 
 @app.route('/check_word', methods=['POST'])
 def check_word():
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     db = client['KreolDB']
     collection = db['dictionary']
     word = request.form.get('word')
@@ -152,7 +152,7 @@ def check_word():
 
 @app.route('/delete_word', methods=['POST'])
 def delete_word():
-    # = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ## = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     db = client['KreolDB']
     collection = db['dictionary']
     word = request.form.get('word')
@@ -175,7 +175,7 @@ def delete_word():
 
 @app.route('/get-words-from-mongo', methods=['GET'])
 def get_words_from_mongo():
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     db = client['KreolDB']
     collection = db['dictionary']
     result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
@@ -190,7 +190,7 @@ def get_words_from_mongo():
 def uname_upass():
 
     # Connect to the MongoDB instance
-    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
 
     # Get a reference to the database
     db = client['KreolDB']
@@ -237,7 +237,7 @@ def upload():
     try:
         os.chmod(file_path, 0o777)
         os.unlink(file_path)
-        # os.remove(file_path)
+        #os.remove(file_path)
         print(f"File '{file_path}' deleted successfully.")
     except FileNotFoundError:
         responseapi = f"File '{file_path}' does not exist."
@@ -280,24 +280,24 @@ def correct_word(word, words):
     # Sort the words in the words array based on their distances from the input word
     closest_words = sorted(words, key=lambda w: custom_distance(w, word))[:26]
     word = word.lower()
-    arraysoundex = find_matching_soundex(word, words)
+    arraysoundex = find_matching_soundex(word,words)
     # Step 1: Convert arrays to sets
-    x_set = set(closest_words)  # closest_words to set
-    y_set = set(arraysoundex)  # arraysoundex to set
+    x_set = set(closest_words) #closest_words to set
+    y_set = set(arraysoundex) #arraysoundex to set
 
     # Step 2: Intersection of sets (X∩Y) #(closest N arraysoundex)
-    # intersection_set = x_set.intersection(y_set)
-    # print(intersection_set,
-    #"#####################intersection##################################")
-    # Step 3: Union of intersection set and X (X∩Y) U X #(closest N arraysoundex) Union closest
-    result_set=y_set.union(x_set)
+    #intersection_set = x_set.intersection(y_set)
+    #print(intersection_set,"#####################intersection##################################")
+    # Step 3: Union of intersection set and X (X∩Y) U X #(closest N arraysoundex) Union closest 
+    result_set = y_set.union(x_set)
 
     # Step 4: Convert set back to array
-    result_array=list(result_set)
+    result_array = list(result_set)
     print(closest_words)
-    print(result_array, "#######################################################")
+    print(result_array,"#######################################################")
     # Filter out the closest words that are not in the words array
-    closest_words=[w for w in closest_words if w in words][:8]
+    closest_words = [w for w in closest_words if w in words][:8]
+
 
     # Return the closest words
     return closest_words
@@ -305,10 +305,10 @@ def correct_word(word, words):
 
 def replace_word(word):
     # Define all the replacements as a dictionary
-    replacements={
-        'rail': 'rel',
-        'ange': 'anze',
-        'oindre': 'wenn',
+    replacements = {
+        'rail':'rel',
+        'ange':'anze',
+        'oindre':'wenn',
         'aign': 'en',
         'é': 'e',
         'è': 'e',
@@ -318,7 +318,7 @@ def replace_word(word):
         'ô': 'o',
         'û': 'u',
         'qui': 'ki',
-        'quoi': 'kwa',
+        'quoi':'kwa',
         'q': 'k',
         'j': 'z',
         'tion': 'sion',
@@ -341,22 +341,22 @@ def replace_word(word):
         'cal': 'kal',
         'mau': 'mo',
         'que': 'k',
-        'aigre': 'eg',
+        'aigre':'eg',
         'cir': 'sir',
         'ance': 'ans',
         'plu': 'pli',
         'phy': 'fi',
         'psy': 'si',
         'ment': 'man',
-        'fant': 'fan',
+        'fant':'fan',
         'ace': 'as',
         'oir': 'war',
-        'oit': 'wat',
+        'oit':'wat',
         'ence': 'ans',
         'euse': 'ez',
         'eau': 'o',
         'aire': 'er',
-        'air': 'er',
+        'air':'er',
         'iste': 'is',
         'istre': 'is',
         'ise': 'iz',
@@ -366,7 +366,7 @@ def replace_word(word):
         # 'oi': 'wa',
         'aitre': 'et',
         'phar': 'far',
-        # 'ch': 's',
+        #'ch': 's',
         'onc': 'onk',
         'coin': 'kwin',
         'coi': 'kwa',
@@ -398,10 +398,10 @@ def replace_word(word):
         'syer': 'sir',
         'soi': 'swa',
         'ract': 'rak',
-        'train': 'trenn',
-        'ouch': 'ous',
-        'hier': 'yer',
-        'rais': 'res',
+        'train':'trenn',
+        'ouch':'ous',
+        'hier':'yer',
+        'rais':'res',
         'aig': 'eg'
     }
 
@@ -673,30 +673,30 @@ def metaPhone(word, array):
         jaro_start_similarity = jellyfish.jaro_winkler_similarity(
             metaphone[0], metacode_start)
         smith_waterman_score = smith_waterman_similarity(word, word)
-        print(f"Word: {word}, Metaphone: {metaphone}, Jaro-Winkler Similarity (Start): {jaro_start_similarity}, Smith-Waterman Score: {smith_waterman_score}")
+        print(f"Word: {word}, Metaphone: {metaphone}, \
+              Jaro-Winkler Similarity (Start): {jaro_start_similarity},\
+                Smith-Waterman Score: {smith_waterman_score}")
 
     return sortedMeta
 
-
-def check_last_character(word, state):
+def check_last_character(word,state):
     if word[-1] == ")":
         word = word[:-1]
-        return word, 1
+        return word,1
     else:
-        return word, 0
-
+        return word,0
 
 def processVal(value):
     value = value.replace('@', 'a')
     value = value[0] + value[1:].replace('$', 's')
     value = re.sub(r"[^\w\s'-)]", "", value)
     if value == 'p':
-        value = 'pe'
+        value='pe'
     if value == 'r':
-        value = 'ar'
+        value='ar'
     checkifcontainla = 0
-    endBracket = 0
-    value, endBracket = check_last_character(value, endBracket)
+    endBracket=0
+    value,endBracket=check_last_character(value,endBracket)
     value, checkifcontainla = remove_suffix(value, checkifcontainla)
     incorrectword = value
     if value == 'mon':
@@ -776,9 +776,11 @@ def processVal(value):
         value = value[:-4] + "me"
     if value.endswith("tent"):
         value = value[:-4] + "tan"
+    print(value,"after map")
     missword = remove_consecutive_letters(value)
+    print(missword,"after consec")
     changedword = replace_word(missword)
-    print(changedword)
+    print(changedword,"+++++++++++++++++++++++++++++++")
     value = correct_word(changedword, words)
     js_jw_bg = calculate_jaro_similarity(changedword, value)
     sorted_array = transform_array(js_jw_bg)
@@ -799,11 +801,11 @@ def processVal(value):
             for element in matchingsoundex:
                 result.append(element + '-la')
                 matchingsoundex = result
-        if (endBracket == 1):
+        if(endBracket==1):
             result = []
             for element in matchingsoundex:
                 result.append(element + ')')
-                matchingsoundex = result
+                matchingsoundex = result           
         response = {'words': matchingsoundex}
         return jsonify(response)
 
@@ -813,11 +815,11 @@ def processVal(value):
             for element in sorted_array:
                 result.append(element + '-la')
                 sorted_array = result
-        if (endBracket == 1):
+        if(endBracket==1):
             result = []
             for element in matchingsoundex:
                 result.append(element + ')')
-                matchingsoundex = result
+                matchingsoundex = result 
         response = {'words': sorted_array}
         return jsonify(response)
 
