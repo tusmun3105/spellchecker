@@ -88,7 +88,8 @@ def apispellcheck():
         state = 'Correct'
     else:
         state = 'Incorrect'
-
+    if state=='Correct':
+        words=[]
     data_set = {'Word2Check': user_query, 'State': state, 'Top8': words} 
     return jsonify(data_set)
 
