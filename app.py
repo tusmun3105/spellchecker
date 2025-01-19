@@ -50,7 +50,8 @@ try:
 
     # Now process the result and handle missing 'word' fields
     word_array = [obj['word'] for obj in result if 'word' in obj]  # Only add 'word' if it exists
-    print("Words from the collection:", word_array)
+    words = word_array
+    #print("Words from the collection:", word_array)
 
 except ConnectionFailure as e:
     # Connection failed
