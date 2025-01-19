@@ -115,7 +115,8 @@ function findPositions(array1, array2) {
   for (let i = 0; i < array2.length; i++) {
     const element = array2[i];
     const elementWithoutLa = element.replace(/-la/g, "").toLowerCase();
-    
+    console.log(element);
+    console.log(elementWithoutLa);
     if (!set1.has(elementWithoutLa) && !set1.has(element.toLowerCase())) {
       if (element.charAt(0) !== element.charAt(0).toUpperCase()) {
         positions.push(i);
