@@ -40,7 +40,9 @@ try:
     db = client['KreolDB']
     collection = db['dictionary']
     result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
+    print(result)
     word_array = [obj['word'] for obj in result]
+    print(word_array)
     words = word_array
 
 except ConnectionFailure as e:
