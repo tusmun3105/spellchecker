@@ -37,12 +37,20 @@ try:
     # Connection successful
     print("Connected to the MongoDB database.")
 
+    # Access the database and collection
     db = client['KreolDB']
     collection = db['dictionary']
+
+    # Find all documents, excluding the _id field, and sorting by 'word'
     result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
-    word_array = [obj['word'] for obj in result]
-    print(word_array)
-    words = word_array
+
+    # Print the documents to check the structure
+    for obj in result:
+        print(obj)  # Print the entire document to see its structure
+
+    # Now process the result and handle missing 'word' fields
+    word_array = [obj['word'] for obj in result if 'word' in obj]  # Only add 'word' if it exists
+    print("Words from the collection:", word_array)
 
 except ConnectionFailure as e:
     # Connection failed
