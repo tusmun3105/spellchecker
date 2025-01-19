@@ -45,8 +45,8 @@ try:
     result = collection.find({}, {'_id': 0, 'word': 1}).sort('word', 1)
 
     # Print the documents to check the structure
-    for obj in result:
-        print(obj)  # Print the entire document to see its structure
+    # for obj in result:
+    #     print(obj)  # Print the entire document to see its structure
 
     # Now process the result and handle missing 'word' fields
     word_array = [obj['word'] for obj in result if 'word' in obj]  # Only add 'word' if it exists
