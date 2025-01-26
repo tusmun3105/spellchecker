@@ -15,14 +15,15 @@ import re
 import configparser
 import json
 from soundex import find_matching_soundex
-print("helllllllllllllllllllllllllllllllllllllllllllllllllllllo")
+#print("helllllllllllllllllllllllllllllllllllllllllllllllllllllo")
 config = configparser.ConfigParser()
 config.read('static\config.ini')
 # config.get('DEFAULT', 'api_URL')
 apiURL = 'https://api.api-ninjas.com/v1/imagetotext'
 # config.get('DEFAULT', 'DBConnectionString')
-connectionstring = os.getenv('MONGODB_URI')
-print(connectionstring)
+# connectionstring = os.getenv('MONGODB_URI')
+connectionstring= "mongodb+srv://tushaar0011:Tushaar0011@cluster0.2axzrgw.mongodb.net/?retryWrites=true&w=majority"
+#print(connectionstring)
 # with open('static\sorted_words.txt', 'r') as f:
 #    words = [line.strip() for line in f]
 words = []
@@ -167,7 +168,7 @@ def delete_word():
     db = client['KreolDB']
     collection = db['dictionary']
     word = request.form.get('word')
-    print(word)
+    #print(word)
     if not word:
         return jsonify({'error': 'Word cannot be empty'})
 
@@ -177,7 +178,7 @@ def delete_word():
     result = collection.delete_one(
         {'word': {'$regex': f'^{word}$', '$options': 'i'}}, collation=collation)
 
-    print(result.deleted_count)
+    #print(result.deleted_count)
     if result.deleted_count > 0:
         return jsonify({'message': 1})
     else:
@@ -240,7 +241,7 @@ def upload():
     r = requests.post(api_url, files=files, headers=headers)
     response = r.json()
     responseapi = ' '.join(item['text'] for item in response)
-    print(responseapi)
+    #print(responseapi)
     image_file_descriptor.close()
     # Replace with the actual file path
     file_path = 'static/image/ocr_upload/ocrimage.jpg'
@@ -249,7 +250,7 @@ def upload():
         os.chmod(file_path, 0o777)
         os.unlink(file_path)
         #os.remove(file_path)
-        print(f"File '{file_path}' deleted successfully.")
+        #print(f"File '{file_path}' deleted successfully.")
     except FileNotFoundError:
         responseapi = f"File '{file_path}' does not exist."
         return jsonify({'success': False, 'message': responseapi})
@@ -290,6 +291,7 @@ def custom_distance(word1, word2):
 def correct_word(word, words):
     # Sort the words in the words array based on their distances from the input word
     closest_words = sorted(words, key=lambda w: custom_distance(w, word))[:26]
+
     word = word.lower()
     arraysoundex = find_matching_soundex(word,words)
     # Step 1: Convert arrays to sets
@@ -304,10 +306,11 @@ def correct_word(word, words):
 
     # Step 4: Convert set back to array
     result_array = list(result_set)
-    print(closest_words)
-    print(result_array,"#######################################################")
+    #print(closest_words)
+    #print(result_array,"#######################################################")
     # Filter out the closest words that are not in the words array
     closest_words = [w for w in closest_words if w in words][:8]
+    #print(closest_words,"@@)")
 
 
     # Return the closest words
@@ -331,6 +334,7 @@ def replace_word(word):
         'qui': 'ki',
         'quoi':'kwa',
         'q': 'k',
+        'joy':'zwa',
         'j': 'z',
         'tion': 'sion',
         'tyon': 'sion',
@@ -413,7 +417,12 @@ def replace_word(word):
         'ouch':'ous',
         'hier':'yer',
         'rais':'res',
-        'aig': 'eg'
+        'aig': 'eg',
+        'chan':'san',
+        'ache': 'as',
+        'ent' : 'an',
+        'oeuf': 'zef',
+        'cen' : 'sen'
     }
 
     # Iterate over all the keys in the replacements dictionary and replace the occurrences of each key with its value
@@ -669,7 +678,7 @@ def smith_waterman_similarity(str1, str2, match_score=2, mismatch_score=-1, gap_
 
 def metaPhone(word, array):
     metacode_start, metacode_end = doublemetaphone(word)
-    print(doublemetaphone(word))
+    #print(doublemetaphone(word))
     arr = array
     arrmeta = [(element, doublemetaphone(element)) for element in arr]
 
@@ -684,9 +693,9 @@ def metaPhone(word, array):
         jaro_start_similarity = jellyfish.jaro_winkler_similarity(
             metaphone[0], metacode_start)
         smith_waterman_score = smith_waterman_similarity(word, word)
-        print(f"Word: {word}, Metaphone: {metaphone}, \
-              Jaro-Winkler Similarity (Start): {jaro_start_similarity},\
-                Smith-Waterman Score: {smith_waterman_score}")
+        #print(f"Word: {word}, Metaphone: {metaphone}, \
+             # Jaro-Winkler Similarity (Start): {jaro_start_similarity},\
+               # Smith-Waterman Score: {smith_waterman_score}")
 
     return sortedMeta
 
@@ -725,8 +734,11 @@ def processVal(value):
 
     value = value.replace("oo", "ou")
     value = value.replace("com", "kom")
+    vowels = "aeiou"
     if value.startswith("acc"):
         value = "ak" + value[3:]
+    if value.startswith("ac"):
+        value = "ak" + value[2:]
     if value.startswith("ach"):
         value = "as" + value[3:]
     if value.startswith("du"):
@@ -787,11 +799,30 @@ def processVal(value):
         value = value[:-4] + "me"
     if value.endswith("tent"):
         value = value[:-4] + "tan"
-    print(value,"after map")
+    if "phan" in value or "fhan" in value:
+        value = value.replace("phan", "fan").replace("fhan", "fan")
+    if "cc" in value:
+        value = value.replace("cc", "k")
+    if "ch" in value:
+        value = value.replace("ch", "sh")
+    if value.startswith("cu"):
+        value = "kou" + value[2:]
+    if value.startswith("c") and len(value) > 1 and value[1] in vowels:
+        value = "s" + value[1:]  
+    if value.startswith("en"):
+        value = "an" + value[2:]
+    if len(value) > 2 and value[0] not in "aeiou" and value[1] == "o" and value[2] == "y":
+        value = value[0] + "wa" + value[3:]
+    if len(value) > 2 and value[0] not in "aeiou" and value[1] == "o" and value[2] == "i":
+        value = value[0] + "wa" + value[3:]
+
+
+
+    #print(value,"after map")
     missword = remove_consecutive_letters(value)
-    print(missword,"after consec")
+    #print(missword,"after consec")
     changedword = replace_word(missword)
-    print(changedword,"+++++++++++++++++++++++++++++++")
+    #print(changedword,"+++++++++++++++++++++++++++++++")
     value = correct_word(changedword, words)
     js_jw_bg = calculate_jaro_similarity(changedword, value)
     sorted_array = transform_array(js_jw_bg)
@@ -799,11 +830,13 @@ def processVal(value):
     # sorted_array = [element[1] for element in sorted_array]
     # print (sorted_array)
     # sorted_array = sort_array_by_similarity(value, changedword)
-    print(sorted_array)
-    # matchingsoundex = matching_soundex_words(sorted_array, changedword)
-    matchingsoundex = metaPhone(changedword, sorted_array)
+    #print("sorted_array",sorted_array)
+    #matchingsoundex = matching_soundex_words(sorted_array, changedword)
+    matchingsoundex = metaPhone(changedword, sorted_array)################################this was commented beacuse metaphone affecting performance
+    #print("matchingsoundex",matchingsoundex)
+    #matchingsoundex = sorted_array
 
-    print(matchingsoundex)
+    #print(matchingsoundex)
     if (len(matchingsoundex) > 0):
         matchingsoundex = merge_arrays_with_duplicates(
             matchingsoundex, sorted_array)
@@ -835,6 +868,6 @@ def processVal(value):
         return jsonify(response)
 
 
-#if __name__ == "__main__":
-    #app.run(host="0.0.0.0", port=5000)
-    # app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True, port=8080)
+    #app.run(debug=True)

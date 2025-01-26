@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Kreol Morisien Spell Checker</title>
+  <link rel="icon" type="image/jpg" href="static\image\logo.jpg">
   <style>
     option:not(:first-child):hover {
       color: white;
@@ -15,7 +16,7 @@
   <script src="{{ url_for('static', filename='script/jquery331.js')}}" type="text/javascript"></script>
   <script>
     var dictionaryarr;
-    var set1;
+    // var set1;
     $(document).ready(function () {
       dictionaryarr = new Array(); // initialize an empty array for the dictionary
 
@@ -35,12 +36,12 @@
 
           // Sort the array
           dictionaryarr.sort();
-          set1 = new Set(dictionaryarr.map(word => word.toLowerCase()));
+          // set1 = new Set(dictionaryarr.map(word => word.toLowerCase()));
           // Do something with the sorted array
-          //console.log(dictionaryarr);
+          // //console.log(dictionaryarr);
         },
         error: function (xhr, textStatus, errorThrown) {
-          console.log('Error:', textStatus, errorThrown);
+          //console.log('Error:', textStatus, errorThrown);
         }
       });
 
@@ -53,26 +54,26 @@
         var key = event.key;
         var result = 0;
         if (/^[!#%&"()*+,\-./:;<=>?@[\]^_`{|}~]$/.test(key)) {
-          caretpos=caretpos+1;
+          caretpos = caretpos + 1;
         }
         if (key === " ") {
           //caretpos=caretpos-1;
         }
- 
-        console.log("The cursorpos is :" + caretpos);
+
+        //console.log("The cursorpos is :" + caretpos);
         var sentence = $("#spellcheckArea").text(); // get the text content of the spellcheckArea element
         sentence = capAfterDot(sentence);
-        console.log(sentence + " ");
+        //console.log(sentence + " ");
         sentence = removeStartingPunctuations(sentence); // remove any starting punctuation from the sentence
         var tokensarray = splitSentence(sentence); // split the sentence into an array of tokens
-        console.log('tokensarr----->' + tokensarray);
+        //console.log('tokensarr----->' + tokensarray);
         var allwords = extractPunctuation(tokensarray); // extract all the words from the tokens array
-        console.log('allwords----->' + allwords);
+        //console.log('allwords----->' + allwords);
         var arrayphrase = splitWords(allwords); // split the words into an array of phrases
         arrayphrase = concatenateElementsWithHyphen(arrayphrase);
         arrayphrase = capitalizeAfterPunctuation(arrayphrase);
         arrayphrase = shiftLastBracket(arrayphrase);
-        console.log(arrayphrase);
+        //console.log(arrayphrase);
         //////////////////////////////////
         for (let i = 0; i < arrayphrase.length - 1; i++) {
           if (arrayphrase[i].endsWith('\"')) {
@@ -83,7 +84,7 @@
         /////////////////////////////////
 
         arrayphrase = removeAdjacentPunctuations(arrayphrase); // remove any adjacent punctuation from the array of phrases
-        var positions = findPositions(set1, arrayphrase); // find the positions of the phrases in the dictionary
+        var positions = findPositions(dictionaryarr, arrayphrase); // find the positions of the phrases in the dictionary
         var arraywithunderline = underlineElements(arrayphrase, positions); // underline the phrases that do not match the dictionary
         var array = arraywithunderline;
         for (let i = 0; i < array.length - 1; i++) {
@@ -131,12 +132,12 @@
         }
         ////////
         arraywithunderline = array
-        console.log(arraywithunderline);
+        //console.log(arraywithunderline);
         var goodstring = arrayToString(arraywithunderline); // convert the array of underlined phrases to a string
-        console.log("before" + goodstring);
+        //console.log("before" + goodstring);
 
         goodstring = removeSpaceAfterHyphen(goodstring);
-        console.log("after" + goodstring);
+        //console.log("after" + goodstring);
         //goodstring=goodstring.charAt(0).toUpperCase() + goodstring.slice(1);
         $('#spellcheckArea').html(goodstring + "&nbsp;");
 
@@ -157,9 +158,9 @@
               type: "POST",
               data: { "value": value },
               success: function (response) {
-                //console.log(response);
+                ////console.log(response);
                 var arrres = response.words;
-                //console.log(arrres);
+                ////console.log(arrres);
                 score7 = arrres;
                 //to create a dropdown of suggestions#absolute
                 var dropdownstring = "<select id=\"ddsuggest\" style='position: relative;margin-left: -40px;margin-top: -140px;margin-right: -20px;margin-bottom: -80px;overflow-y: auto;'>";
@@ -229,8 +230,8 @@
       setInterval(function () {
         var redUnderlineCount = $('*').filter(function () {
           return $(this).css('text-decoration-color') === 'rgb(255, 0, 0)';
-        }).length;
-        $('#numerrs').html(redUnderlineCount - 1);
+        }).length-2;
+        $('#numerrs').html(redUnderlineCount);
       }, 500);
       //count number of errors end Headers
       //control z operation
@@ -272,10 +273,10 @@
 
         // Deselect the text and provide feedback
         selection.removeAllRanges();
-        $('#btncopy').text("Copied");
+        $('#changeLabel').text("Copied");
         setTimeout(
           function () {
-            $('#btncopy').text("Copy");
+            $('#changeLabel').text("Copy");
           }, 1000);
       });
       //end of copy
@@ -286,17 +287,17 @@
           // Set the text of the paragraph
           $('#spellcheckArea').html(text);
           var words = $('#spellcheckArea').text().trim().split(/\s+/);
-              if (words.length === 1 && words[0] === '') {
-                $('#numwords').html('0');
-              } else {
-                $('#numwords').html(words.length);
-              }
-              var charCount = $('#spellcheckArea').text().length;
-              if (charCount === 0) {
-                $('#numchars').html('0');
-              } else {
-                $('#numchars').html(charCount - 1);
-              }
+          if (words.length === 1 && words[0] === '') {
+            $('#numwords').html('0');
+          } else {
+            $('#numwords').html(words.length);
+          }
+          var charCount = $('#spellcheckArea').text().length;
+          if (charCount === 0) {
+            $('#numchars').html('0');
+          } else {
+            $('#numchars').html(charCount - 1);
+          }
           $('#spellcheckArea').trigger('keyup');
         });
       });
@@ -427,17 +428,17 @@
         reader.onload = function (event) {
           $('#spellcheckArea').html(event.target.result);
           var words = $('#spellcheckArea').text().trim().split(/\s+/);
-              if (words.length === 1 && words[0] === '') {
-                $('#numwords').html('0');
-              } else {
-                $('#numwords').html(words.length);
-              }
-              var charCount = $('#spellcheckArea').text().length;
-              if (charCount === 0) {
-                $('#numchars').html('0');
-              } else {
-                $('#numchars').html(charCount - 1);
-              }
+          if (words.length === 1 && words[0] === '') {
+            $('#numwords').html('0');
+          } else {
+            $('#numwords').html(words.length);
+          }
+          var charCount = $('#spellcheckArea').text().length;
+          if (charCount === 0) {
+            $('#numchars').html('0');
+          } else {
+            $('#numchars').html(charCount - 1);
+          }
           $('#spellcheckArea').trigger('keyup');
         }
 
@@ -451,28 +452,29 @@
     function searchWords() {
       // Get the input value from the spellcheckArea
       var input = document.getElementById("spellcheckArea").textContent;
-      console.log(input + "@@@@@@@@@@@@");
+      //console.log(input + "@@@@@@@@@@@@");
       // Split the input into individual words
       var words = input.split(" ");
       words = words.map(function (element) {
         return element.trim();
       });
-      console.log(+"%%%%");
+      //console.log(+"%%%%");
       // Clear previous results if space is entered
       if (words[words.length - 1] === "") {
         resultsContainer.innerHTML = "";
         currentWordResults = null;
       } else {
-        // Filter the dictionaryarr for the current word
-        var word = words[words.length - 1];
+        // Get the last word in the array
+        const word = words[words.length - 1];
+
         if (word.length >= 3) {
-          currentWordResults = dictionaryarr.filter(function (item) {
-            return item.startsWith(word);
-          });
+          // Filter the dictionary array for words starting with the current word
+          currentWordResults = dictionaryarr.filter(item => typeof item === 'string' && item.startsWith(word));
         } else {
           currentWordResults = null;
         }
       }
+
 
       // Display the results for the current word
       if (currentWordResults) {
@@ -484,7 +486,7 @@
       else {
         $('#results').html('&nbsp;');
       }
-
+      const spellcheckArea = document.getElementById("spellcheckArea");
     }
     document.addEventListener("DOMContentLoaded", function () {
       resultsContainer = document.getElementById("results");
@@ -497,18 +499,19 @@
   {% extends "navbar.html" %}
   {% block content %}
   <div class="container">
-    <label style="color:red;">Did you mean?</label><span id="results"></span>
+    <label style="color:red;">Did you mean?</label><span id="results" style="color:gold;"></span>
     <p class="editor" contenteditable="true" id="spellcheckArea" spellcheck="false" style="overflow: auto;"
       data-placeholder="Type here..." oninput="searchWords()"></p>
+
     <div class="button-label-container">
       <div class="button-container">
-        <button id="btncopy" class="button"><i class="fas fa-copy"></i>Copy</button>
-        <button id="btnpaste" class="button"><i class="fas fa-paste"></i>Paste</button>
-        <button id="btnclear" class="button"><i class="fas fa-trash"></i>Clear</button>
-        <label for="file-input-ocr" class="button" id="file-label-ocr"><i class="fas fa-image"></i>OCR</label>
+        <button id="btncopy" class="button"><i class="fas fa-copy" style="color: red;"></i><span id="changeLabel">Copy</span></button>
+        <button id="btnpaste" class="button"><i class="fas fa-paste" style="color: #5757ff;"></i>Paste</button>
+        <button id="btnclear" class="button"><i class="fas fa-trash" style="color: yellow;"></i>Clear</button>
+        <label for="file-input-ocr" class="button" id="file-label-ocr"><i class="fas fa-image"  style="color: green;"></i>OCR</label>
         <input type="file" id="file-input-ocr" style="display:none;">
         <span id="imagename"></span>
-        <label for="file-input" class="button" id="file-label"><i class="fas fa-upload"></i>Upload file</label>
+        <label for="file-input" class="button" id="file-label"><i class="fas fa-upload" style="color: rgb(0, 0, 0);"></i>Upload file</label>
         <input type="file" id="file-input" style="display:none;" accept="text/plain">
         <span id="filename"></span>
       </div>

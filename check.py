@@ -25,7 +25,7 @@ collection = db[collection_name]
 
 # Insert the data into the collection
 result = collection.insert_many(data)
-print(f"Imported {len(result.inserted_ids)} documents into the collection.")
+#print(f"Imported {len(result.inserted_ids)} documents into the collection.")
 
 # Close the MongoDB connection
 client.close()

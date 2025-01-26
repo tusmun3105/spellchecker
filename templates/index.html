@@ -132,15 +132,15 @@
     for (var i = 0; i < data.length; i++) {
       dictionaryarr.push(data[i].word);
     }
-    console.log("lennnn"+data.length)
+    //console.log("lennnn"+data.length)
     // Sort the array
     dictionaryarr.sort();
     
     // Do something with the sorted array
-    console.log(dictionaryarr);
+    //console.log(dictionaryarr);
   },
   error: function(xhr, textStatus, errorThrown) {
-    console.log('Error:', textStatus, errorThrown);
+    //console.log('Error:', textStatus, errorThrown);
   }
 });
       ///////////////////////////
@@ -149,34 +149,34 @@
         $('#ddsuggest').remove();
         var caret = new VanillaCaret(document.getElementById('spellcheckArea')); // Initialize
         var caretpos = caret.getPos();
-        console.log("The cursorpos is :"+caretpos);
+        //console.log("The cursorpos is :"+caretpos);
         var sentence = $("#spellcheckArea").text();
         sentence=capAfterDot(sentence);
-        console.log(sentence+" ");
+        //console.log(sentence+" ");
         sentence = removeStartingPunctuations(sentence);
         var tokensarray = splitSentence(sentence);
-        console.log('tokensarr----->'+tokensarray);
+        //console.log('tokensarr----->'+tokensarray);
         var allwords = extractPunctuation(tokensarray);
-        console.log('allwords----->'+allwords);
+        //console.log('allwords----->'+allwords);
         var arrayphrase = splitWords(allwords);
-        console.log('arrayphrase----->'+arrayphrase);
+        //console.log('arrayphrase----->'+arrayphrase);
         arrayphrase = removeAdjacentPunctuations(arrayphrase);
         var positions = findPositions(dictionaryarr, arrayphrase);
         var arraywithunderline = underlineElements(arrayphrase, positions)
         var goodstring = arrayToString(arraywithunderline);
-         console.log(arraywithunderline);
-        //console.log(goodstring);
+         //console.log(arraywithunderline);
+        ////console.log(goodstring);
         $('#spellcheckArea').html(goodstring + "&nbsp;&nbsp;");
         var size=$("#spellcheckArea").text().length-2;
-        // console.log("size:"+size);
-        // console.log("caretaftersize:"+size);
+        // //console.log("size:"+size);
+        // //console.log("caretaftersize:"+size);
         // if(caret.getPos()<size){
-        //   //console.log("caretaftersize:"+size);
+        //   ////console.log("caretaftersize:"+size);
         //   caret.setPos(caretpos)
         //   if(caret.getPos()<size){caret.setPos(caret.getPos()+1);}//sasa
         // }
     
-        //console.log("The cursorpos2 is :"+caretpos);
+        ////console.log("The cursorpos2 is :"+caretpos);
         caret.setPos(caretpos)
         for (var i = 0; i < arraywithunderline.length; i++) {
           var errornum = "#error" + i;
@@ -194,7 +194,7 @@
             //               closestWordss[s]=phoenix(removeadds,dictionaryarr[s]);
             //             }
             //             var score7=[];
-            //             console.log(closestWordss);
+            //             //console.log(closestWordss);
             //             for(var ks=0;ks<closestWordss.length;ks++){
             //              if(closestWordss[ks]>=0.7){score7.push(dictionaryarr[ks]);}
 
@@ -223,7 +223,7 @@
             // });
             //             /*end of phonix here */
             //          if(score7.length==0){
-            //              console.log("empgt");
+            //              //console.log("empgt");
             //////////////////////
             var value = $(this).text();
             $.ajax({
@@ -231,9 +231,9 @@
               type: "POST",
               data: { "value": value },
               success: function (response) {
-                //console.log(response);
+                ////console.log(response);
                 var arrres = response.words;
-                //console.log(arrres);
+                ////console.log(arrres);
                 score7 = arrres;
                 //to create a dropdown of suggestions
                 var dropdownstring = "<select id=\"ddsuggest\">";

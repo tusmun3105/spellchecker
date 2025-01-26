@@ -108,52 +108,52 @@ function findPositions(array1, array2) {
   }
   return positions;
 }
-function findPositions(array1, array2) {
-  var positions = [];
-  var set1 = array1
-  
-  for (let i = 0; i < array2.length; i++) {
-    const element = array2[i];
-    const elementWithoutLa = element.replace(/-la/g, "").toLowerCase();
-    console.log(element);
-    console.log(elementWithoutLa);
-    if (!set1.has(elementWithoutLa) && !set1.has(element.toLowerCase())) {
-      if (element.charAt(0) !== element.charAt(0).toUpperCase()) {
-        positions.push(i);
-      }
-    }
-  }
-  
-  return positions;
-}
 // function findPositions(array1, array2) {
 //   var positions = [];
-//   var set1 = new Set(array1);  // Keep original case in the set
+//   var set1 = array1
   
 //   for (let i = 0; i < array2.length; i++) {
 //     const element = array2[i];
-//     const elementWithoutLa = element.replace(/-la/g, "");
-    
-//     console.log(element);
-//     console.log(elementWithoutLa);
-    
-//     // Compare in lowercase only
-//     if (!set1.has(elementWithoutLa.toLowerCase()) && !set1.has(element.toLowerCase())) {
-//       // Check if the first character is not uppercase
+//     const elementWithoutLa = element.replace(/-la/g, "").toLowerCase();
+//     //console.log(element);
+//     //console.log(elementWithoutLa);
+//     if (!set1.has(elementWithoutLa) && !set1.has(element.toLowerCase())) {
 //       if (element.charAt(0) !== element.charAt(0).toUpperCase()) {
-//         positions.push(i);  // Add position to the result
+//         positions.push(i);
 //       }
 //     }
 //   }
   
 //   return positions;
 // }
+function findPositions(array1, array2) {
+  var positions = [];
+  var set1 = new Set(array1);  // Keep original case in the set
+  
+  for (let i = 0; i < array2.length; i++) {
+    const element = array2[i];
+    const elementWithoutLa = element.replace(/-la/g, "");
+    
+    //console.log(element);
+    //console.log(elementWithoutLa);
+    
+    // Compare in lowercase only
+    if (!set1.has(elementWithoutLa.toLowerCase()) && !set1.has(element.toLowerCase())) {
+      // Check if the first character is not uppercase
+      if (element.charAt(0) !== element.charAt(0).toUpperCase()) {
+        positions.push(i);  // Add position to the result
+      }
+    }
+  }
+  
+  return positions;
+}
 
 function underlineElements(array1, array2) {
   for (let i = 0; i < array2.length; i++) {
     if (array2[i] < array1.length) {
       if (isNaN(array1[array2[i]])) {
-        array1[array2[i]] = "<span class='suggestclass'  id='error" + i + "' style='text-decoration-line: underline; text-decoration-style: dashed; text-underline-position: under; text-decoration-color: red;'>" + array1[array2[i]] + "</span><span class='suggestclass'  id='suggestions" + i + "'></span>";
+        array1[array2[i]] = "<span class='suggestclass'  id='error" + i + "' style='text-decoration-line: spelling-error; text-decoration-style: dashed; text-underline-position: auto; text-decoration-color: red;'>" + array1[array2[i]] + "</span><span class='suggestclass'  id='suggestions" + i + "'></span>";
       }
     }
   }

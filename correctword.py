@@ -130,17 +130,17 @@ def remove_consecutive_letters(s):
 
 missword='quarantaine'#sime
 missword=remove_consecutive_letters(missword)
-print(missword)
+#print(missword)
 changedword=replace_word(missword)
-print(changedword)
+#print(changedword)
 arrdist=correct_word(changedword, words)
-print(arrdist)  # Output: 'mango'
+#print(arrdist)  # Output: 'mango'
 
 def sort_array_by_similarity(array, word):
     sorted_array = sorted(array, key=lambda x: (not x.startswith(word[0]), -sum(c in x for c in word), abs(len(x) - len(word))))
     return sorted_array
 
 sorted_array = sort_array_by_similarity(arrdist, changedword)
-print(sorted_array)
+#print(sorted_array)
 
 
