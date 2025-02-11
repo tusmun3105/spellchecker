@@ -107,22 +107,25 @@ def apispellcheck():
 
 @app.route("/get_words")
 def get_words():
-
-    # Connection string for MongoDB
+    # MongoDB connection details
     # connection_string = "mongodb://localhost:27017/"
-    # Name of the database
-    database_name = "KreolDB"
-    # Name of the collection
-    collection_name = "dictionary"
+    database_name = "KreolDB"  # Name of the database
+    collection_name = "dictionary"  # Name of the collection
 
     # Connect to MongoDB
-    ##client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
+    # client = MongoClient(connectionstring, ssl_cert_reqs=ssl.CERT_NONE)
     database = client[database_name]
     collection = database[collection_name]
+
+    # Retrieve words from the collection
     words = []
     cursor = collection.find({}, {"word": 1})  # Retrieve only the "word" field
     for document in cursor:
-        words.append(document["word"])
+        word = document.get("word")  # Safely retrieve the 'word' field
+        if word:  # Add only if 'word' exists and is not None
+            words.append(word)
+
+    # Return the sorted list of words as JSON
     return jsonify(sorted(words))
 
 
@@ -310,7 +313,7 @@ def correct_word(word, words):
     #print(result_array,"#######################################################")
     # Filter out the closest words that are not in the words array
     closest_words = [w for w in closest_words if w in words][:8]
-    #print(closest_words,"@@)")
+    print("closest_words",closest_words)
 
 
     # Return the closest words
@@ -707,6 +710,7 @@ def check_last_character(word,state):
         return word,0
 
 def processVal(value):
+    print("value",value)
     value = value.replace('@', 'a')
     value = value[0] + value[1:].replace('$', 's')
     value = re.sub(r"[^\w\s'-)]", "", value)
@@ -808,21 +812,26 @@ def processVal(value):
     if value.startswith("cu"):
         value = "kou" + value[2:]
     if value.startswith("c") and len(value) > 1 and value[1] in vowels:
-        value = "s" + value[1:]  
+        value = "k" + value[1:]
+    if "oin" in value:  
+         value = value.replace("oin", "win")
     if value.startswith("en"):
         value = "an" + value[2:]
     if len(value) > 2 and value[0] not in "aeiou" and value[1] == "o" and value[2] == "y":
         value = value[0] + "wa" + value[3:]
     if len(value) > 2 and value[0] not in "aeiou" and value[1] == "o" and value[2] == "i":
         value = value[0] + "wa" + value[3:]
+    if "aible" in value or "aib" in value:
+        value = value.replace("aible", "eb").replace("aib", "eb")
 
 
 
     #print(value,"after map")
     missword = remove_consecutive_letters(value)
     #print(missword,"after consec")
+    print("missword",missword)
     changedword = replace_word(missword)
-    #print(changedword,"+++++++++++++++++++++++++++++++")
+    print("changedword",changedword)
     value = correct_word(changedword, words)
     js_jw_bg = calculate_jaro_similarity(changedword, value)
     sorted_array = transform_array(js_jw_bg)

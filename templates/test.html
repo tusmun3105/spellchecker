@@ -143,15 +143,17 @@
 
         var size = $("#spellcheckArea").text().length - 2;
         caret.setPos(caretpos);
-        for (var i = 0; i < arraywithunderline.length; i++) {
+        for (let i = 0; i < arraywithunderline.length; i++) {
           var errornum = "#error" + i;
-
-          $(errornum).click(function () {
+          var loader = "#loader" + i;
+          $(errornum).on('click', function (event) {
+            event.preventDefault();
             $('#ddsuggest').remove();
             var value = $(this).text();
             var errornumber = $(this).attr('id');
             var id = extractDigits(errornumber);
             var value = $(this).text();
+            value = value.length > 0 && /^[^AEIOU]$/.test(value[value.length - 1]) && /[A-Z]/.test(value[value.length - 1]) ? value.slice(0, -1) + value[value.length - 1].toLowerCase() + "e" : value;
             value = value.toLowerCase();
             $.ajax({
               url: "/processUserInfo",
@@ -167,7 +169,7 @@
                 dropdownstring = dropdownstring + "<option style='background-color:orange;'>Sizesion</option>"
                 //Pezz sa ti fles la pu gayn sizesyon 
                 for (var d = 0; d < score7.length; d++) {
-                  dropdownstring = dropdownstring + "<option value='" + score7[d] + "'>" + score7[d] + "</option";
+                  dropdownstring = dropdownstring + "<option value='" + score7[d] + "' style='font-weight:bold;'>" + score7[d] + "</option";
                   dropdownstring = dropdownstring + "</select>";
                 }
                 //end of dropdown creation
@@ -230,7 +232,7 @@
       setInterval(function () {
         var redUnderlineCount = $('*').filter(function () {
           return $(this).css('text-decoration-color') === 'rgb(255, 0, 0)';
-        }).length-2;
+        }).length - 2;
         $('#numerrs').html(redUnderlineCount);
       }, 500);
       //count number of errors end Headers
@@ -505,13 +507,16 @@
 
     <div class="button-label-container">
       <div class="button-container">
-        <button id="btncopy" class="button"><i class="fas fa-copy" style="color: red;"></i><span id="changeLabel">Copy</span></button>
+        <button id="btncopy" class="button"><i class="fas fa-copy" style="color: red;"></i><span
+            id="changeLabel">Copy</span></button>
         <button id="btnpaste" class="button"><i class="fas fa-paste" style="color: #5757ff;"></i>Paste</button>
         <button id="btnclear" class="button"><i class="fas fa-trash" style="color: yellow;"></i>Clear</button>
-        <label for="file-input-ocr" class="button" id="file-label-ocr"><i class="fas fa-image"  style="color: green;"></i>OCR</label>
+        <label for="file-input-ocr" class="button" id="file-label-ocr"><i class="fas fa-image"
+            style="color: green;"></i>OCR</label>
         <input type="file" id="file-input-ocr" style="display:none;">
         <span id="imagename"></span>
-        <label for="file-input" class="button" id="file-label"><i class="fas fa-upload" style="color: rgb(0, 0, 0);"></i>Upload file</label>
+        <label for="file-input" class="button" id="file-label"><i class="fas fa-upload"
+            style="color: rgb(0, 0, 0);"></i>Upload file</label>
         <input type="file" id="file-input" style="display:none;" accept="text/plain">
         <span id="filename"></span>
       </div>
